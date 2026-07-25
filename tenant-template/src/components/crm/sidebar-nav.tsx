@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { KanbanSquare, Users, ListTodo, LogOut, Building2, HandCoins, Contact } from "lucide-react";
+import { KanbanSquare, Users, ListTodo, LogOut, Building2, HandCoins, Contact, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, initials } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABELS } from "@/lib/constants";
-import { useCurrentProfile } from "@/lib/hooks/use-current-profile";
+import { useCurrentProfile, canManage } from "@/lib/hooks/use-current-profile";
 
 const NAV_ITEMS = [
   { href: "/crm/leads", label: "Leads", icon: KanbanSquare },
@@ -19,10 +19,13 @@ const NAV_ITEMS = [
   { href: "/crm/team", label: "Team", icon: Contact },
 ];
 
+const MANAGE_ONLY_NAV_ITEMS = [{ href: "/crm/automation", label: "Automation", icon: Zap }];
+
 export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
   const profile = useCurrentProfile();
+  const navItems = canManage(profile.role) ? [...NAV_ITEMS, ...MANAGE_ONLY_NAV_ITEMS] : NAV_ITEMS;
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -39,7 +42,7 @@ export function SidebarNav() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 p-2">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = pathname.startsWith(item.href);
           return (
             <Link

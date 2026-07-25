@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
 import { CompareBar } from "@/components/site/compare-bar";
 import { AttributionCapture } from "@/components/site/attribution-capture";
+import { AbandonedBrowsePrompt } from "@/components/site/abandoned-browse-prompt";
 import type { BrokerContact } from "@/lib/types/broker-content";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
           <WhatsAppButton number={contact.whatsapp_number} message={`Hi ${broker?.display_name ?? ""}, I'd like to know more.`} />
         )}
         <CompareBar />
+        <AbandonedBrowsePrompt whatsappNumber={contact.whatsapp_number} brokerName={broker?.display_name} />
       </div>
     </LanguageProvider>
   );

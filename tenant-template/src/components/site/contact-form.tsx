@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { getRememberedContact, rememberContact } from "@/lib/visitor";
+import { getRememberedContact, rememberContact, getVisitorId } from "@/lib/visitor";
 import { resolveLeadSource } from "@/lib/utm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export function ContactForm() {
       p_source_detail: sourceDetail,
       p_campaign: campaign,
       p_message: message || null,
+      p_visitor_id: getVisitorId(),
     });
     if (error) {
       toast.error(`Couldn't send: ${error.message}`);

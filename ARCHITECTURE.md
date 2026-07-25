@@ -313,3 +313,101 @@ WhatsApp Business API / email provider credentials get wired in as
 placeholders. This step only had to make sure a lead reliably lands in
 the CRM, correctly attributed; what happens automatically after that is
 Step 8's job.
+
+## Step 8 — automation engine
+
+**Why Postgres can only enqueue, never send.** Making an outbound HTTP
+call from inside Postgres needs `pg_net` — a Supabase-specific extension,
+hard to exercise in a plain local Postgres test harness, and a step
+further from "just SQL" than anything used so far. So the split is:
+triggers and scheduled scan functions only ever `insert into
+automation_logs (..., status => 'pending')` via a shared
+`enqueue_automation()` helper; a Next.js Route Handler
+(`/api/cron/automation`), invoked on a schedule, is what actually reads
+pending rows and sends. This keeps 100% of the "when does this fire"
+logic in the database (where the rest of the domain logic already lives)
+while keeping "how does a message actually go out" in application code
+where a provider SDK belongs.
+
+**Event-driven vs. time-scanned triggers.** Five triggers are true
+database triggers — `new_lead` (AFTER INSERT on `leads`), `post_site_visit`
+(AFTER INSERT on `activity_log` where `activity_type = 'site_visit'`),
+`price_drop_status_change` and `new_listing_match` (AFTER UPDATE on
+`listings`), and `post_closing` (folded into the existing
+`update_deal_stage` RPC when `stage = 'closed'`) — because each has a row
+change to hang off of. The other four — `no_response_sla`,
+`drip_sequence`, `birthday_anniversary`, `abandoned_browse` — depend on
+*how much time has passed*, which no trigger can express, so they're scan
+functions (`scan_no_response_sla()` etc.) that the same cron endpoint
+calls before dispatching. `run_automation_scans()` wraps all four and
+returns a per-scan count. Every scan is idempotent by construction: each
+checks `automation_logs` for an existing row (or a recent-window check
+where there's no natural dedup key, e.g. abandoned_browse) before
+inserting, so re-running the scan — which the cron does every 15 minutes
+— never double-enqueues.
+
+**Provider abstraction with a dry-run fallback.** `sendWhatsAppMessage()`
+and `sendEmail()` (`src/lib/automation/providers/`) both check for
+provider env vars first and, if unset, log to the console and report
+success instead of failing. This is what makes the whole pipeline —
+queueing, templating, per-channel routing, retries via re-scan, CRM-visible
+status — fully exercisable before a broker hands over real WhatsApp
+Business API or SMTP credentials, which per the brief are exactly the
+values that should stay placeholders. `WHATSAPP_PROVIDER` selects between
+`meta_cloud` (official Graph API) and `generic_webhook` (a configurable
+POST endpoint, for providers like Interakt/Gupshup whose send-message call
+is a simple POST); SMTP is the only email path, since it works with any
+provider without picking a vendor SDK.
+
+**`{{variable}}` templates, not a templating engine.** `notification_templates.body`
+is multi-language `jsonb` (`{en, hi, gu}`), rendered per broker's
+`default_language` via a deliberately dumb `renderTemplate()` — plain
+`{{key}}` substitution, no conditionals or loops. Template copy is
+broker-editable free text (via the new `/crm/automation` settings page),
+and a more powerful templating language would be a bigger footgun for
+non-technical editing than a real feature.
+
+**Abandoned-browse retargeting is two different things wearing one name.**
+The brief's "abandoned-browse retargeting (WhatsApp widget + email if
+captured)" is genuinely two mechanisms with different data sources:
+- *Client-side widget* (`AbandonedBrowsePrompt` + `use-abandoned-browse`
+  hook): reads this browser's own `localStorage` view history in real
+  time and can prompt a WhatsApp chat for someone who has **never**
+  submitted any form — there's no contact_id to look up yet.
+- *Server-side scan* (`scan_abandoned_browse()` +
+  `abandoned_browse_retarget_email` template): reads `page_events` grouped
+  by `contact_id` and sends email — it can only fire once a visitor has
+  identified themselves at least once (`submit_lead`/`create_saved_search`),
+  because that's the only point `page_events.contact_id` gets backfilled
+  (via the new `p_visitor_id` parameter on both RPCs).
+
+Both read the same underlying signal (`listing_view` page_events) but
+can't be merged into one code path — one has no `contact_id` yet by
+definition, the other has no synchronous access to `localStorage`.
+
+**`getVisitorId()` now threads all the way through.** `submit_lead` and
+`create_saved_search` gained an optional `p_visitor_id` parameter that
+backfills any of that visitor's anonymous `page_events` rows with the
+newly-created/matched `contact_id`. `ContactForm`, `WhatsAppButton`, and
+`SavedSearchForm` all now pass it. A new `ListingViewTracker` (mounted on
+the listing detail page) is what actually produces the `listing_view`
+events being backfilled — Step 7 only ever logged `whatsapp_click`.
+
+**Bug caught by the local test harness:** `make_interval(hours => numeric)`
+doesn't exist — the `hours` parameter is typed `int`, and the SLA/window
+config values come out of `jsonb` as `numeric` via `::numeric`. Needed an
+explicit `::int` cast in both `scan_no_response_sla` and
+`scan_abandoned_browse`. Caught by the same local-Postgres trigger/scan
+test suite used every step so far; re-verified end to end afterward,
+including re-running `run_automation_scans()` twice back to back to
+confirm zero duplicate enqueues.
+
+**Automation config lives in the database, not code** — the CRM's new
+`/crm/automation` page (broker/employee only, gated by the same
+`automation_rules_all`/`notification_templates_all` RLS policies as
+everywhere else) lets a broker toggle any trigger on/off, retune SLA
+hours / drip day offsets / abandoned-browse thresholds, and rewrite
+message copy per language — all without a migration. Nine rules and
+twelve templates ship as real, active defaults (migration `0010`),
+not stubs; "wire every workflow" only means something if there's live
+copy to send on day one.

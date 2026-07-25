@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getVisitorId } from "@/lib/visitor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ export function SavedSearchForm() {
         ...(bhk ? { bhk: [Number(bhk)] } : {}),
       },
       p_alert_channel: alertChannel,
+      p_visitor_id: getVisitorId(),
     });
     if (error) {
       toast.error(`Couldn't save: ${error.message}`);

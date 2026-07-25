@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getListingBySlug } from "@/lib/data/public/listings";
 import { getBrokerProfile } from "@/lib/data/public/broker-profile";
 import { ListingGallery } from "@/components/site/listing-gallery";
+import { ListingViewTracker } from "@/components/site/listing-view-tracker";
 import { YoutubeEmbed } from "@/components/site/youtube-embed";
 import { EmiCalculator } from "@/components/site/emi-calculator";
 import { ListingCard } from "@/components/site/listing-card";
@@ -57,6 +58,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <ListingViewTracker listingId={listing.id} />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">

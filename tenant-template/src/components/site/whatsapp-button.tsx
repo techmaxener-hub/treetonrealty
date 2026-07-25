@@ -85,6 +85,7 @@ export function WhatsAppButton({
       p_source_detail: sourceDetail,
       p_campaign: campaign,
       p_message: message ?? null,
+      p_visitor_id: getVisitorId(),
     });
 
     if (error) {

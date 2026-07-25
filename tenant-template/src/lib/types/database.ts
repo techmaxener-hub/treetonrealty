@@ -241,6 +241,8 @@ export interface Database {
             segment?: ListingSegment[];
           };
           notes: string | null;
+          date_of_birth: string | null;
+          anniversary_date: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -429,6 +431,7 @@ export interface Database {
           visitor_id: string;
           event_type: PageEventType;
           listing_id: string | null;
+          contact_id: string | null;
           metadata: Record<string, unknown>;
           created_at: string;
         };
@@ -450,6 +453,7 @@ export interface Database {
           p_source_detail?: string | null;
           p_campaign?: string | null;
           p_message?: string | null;
+          p_visitor_id?: string | null;
         };
         Returns: string;
       };
@@ -469,6 +473,7 @@ export interface Database {
           p_email?: string | null;
           p_criteria?: Record<string, unknown>;
           p_alert_channel?: AlertChannel;
+          p_visitor_id?: string | null;
         };
         Returns: string;
       };
@@ -483,6 +488,10 @@ export interface Database {
       update_deal_stage: {
         Args: { p_deal_id: string; p_new_stage: DealStage };
         Returns: undefined;
+      };
+      run_automation_scans: {
+        Args: Record<string, never>;
+        Returns: Record<string, number>;
       };
     };
   };
