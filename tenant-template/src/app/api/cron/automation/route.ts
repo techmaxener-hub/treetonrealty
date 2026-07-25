@@ -28,7 +28,22 @@ export async function GET(request: NextRequest) {
 
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    // TEMPORARY diagnostic for a live 401 mismatch -- reveals only
+    // lengths and edge characters, never the full secret. Remove once
+    // the mismatch is found; see chat history for context.
+    const received = authHeader?.replace(/^Bearer /, "") ?? "";
+    return NextResponse.json(
+      {
+        error: "unauthorized",
+        debug: {
+          configuredLength: secret.length,
+          receivedLength: received.length,
+          configuredEdges: `${secret.slice(0, 4)}...${secret.slice(-4)}`,
+          receivedEdges: received.length > 0 ? `${received.slice(0, 4)}...${received.slice(-4)}` : "(empty)",
+        },
+      },
+      { status: 401 },
+    );
   }
 
   const supabase = createServiceClient();
