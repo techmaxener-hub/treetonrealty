@@ -56,6 +56,36 @@ consistent, `ltree` ships as a core Postgres extension.
 Lead/listing/deal assignment has **no role restriction** — broker,
 employee, master_advisor, and advisor can all be assigned work.
 
+**Correction made in Step 3:** `listings.advisor_id`, `leads.assigned_advisor_id`,
+and `deals.primary_advisor_id` originally referenced `advisor_profiles(id)`
+— the *optional public bio page* table. That made anyone without a public
+profile (a broker, an ops-focused employee) structurally unassignable,
+contradicting the "no restriction" rule above. Migration `0003` re-points
+all three at `profiles(id)` directly, since every team member has one.
+`testimonials.advisor_id` was left pointing at `advisor_profiles` — a
+testimonial is public attribution, which genuinely belongs there.
+
+**RLS + `RETURNING` gotcha, found while testing Step 3:** Postgres
+enforces a table's `SELECT` policies on the row returned by `INSERT ...
+RETURNING` (and `UPDATE ... RETURNING`), not just the `WITH CHECK`
+expression. A master_advisor/advisor inserting a brand-new `contacts` row
+with no lead/deal linking it to them yet fails on `RETURNING` — the row
+passes `WITH CHECK (true)` but isn't yet visible under `contact_in_scope()`.
+Confirmed this empirically against a real Postgres instance: the same
+`INSERT` succeeds without `RETURNING`, and succeeds with it once the row
+is broker/employee-created (`contact_in_scope()` short-circuits for
+`is_broker_or_employee()`) or already linked to a lead in the inserter's
+downline. Two consequences, both already reflected in the schema/UI:
+- The public lead-capture path (`submit_lead`) was already
+  `security definer` and returns a scalar id, not a selected row — never
+  affected.
+- In the CRM, standalone "Add Contact" (not attached to a lead) is a
+  broker/employee action only. Advisors and master_advisors create
+  contacts implicitly by creating a lead (also via `submit_lead`, called
+  from the authenticated app, not just the public site) — which links
+  the contact to them in the same transaction, so it's visible
+  immediately after.
+
 ## Auth & RLS (implemented Step 2)
 
 `profiles` rows are never created by the client — `handle_new_user()`
