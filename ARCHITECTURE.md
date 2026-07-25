@@ -171,3 +171,37 @@ exists, and diff against this file rather than trusting it blindly.
   effort across brokers in the same micro-market; a shared
   `locality_master` table with per-broker overrides is a clean future
   addition.
+
+## Step 4 findings
+
+**RLS `UPDATE` bug: unassigned rows were unclaimable.** `USING` on an
+`UPDATE` policy checks the row's *current* (pre-update) values, not the
+new ones. `listings_update` and `leads_update` both gated on
+`in_own_downline(<current> advisor_id)` with no carve-out for a null
+assignee — since `in_own_downline(null)` is false for everyone but the
+broker, nobody except the broker could ever self-claim an unassigned
+lead or listing, even though both are deliberately shown to the whole
+team as a shared pool (`leads_select` already has the `is null` carve-out
+— `leads_update`/`listings_update` didn't). Fixed in migration `0005`,
+re-verified: an advisor can now claim an unassigned row, and still can't
+reassign one someone else already owns.
+
+**Storage: `listing-media` bucket is public.** Supabase serves
+public-bucket objects through an unauthenticated CDN path that does not
+re-check RLS, so a draft (unpublished) listing's photos are reachable by
+anyone with the exact `{listing_id}/...` path — not linked anywhere,
+not enumerable, but not cryptographically private either. Chosen over
+signed URLs to avoid refresh-token complexity in the public site (Step
+6), on the judgment that photos are low-sensitivity. The RLS on
+`storage.objects` still governs every write regardless of the bucket's
+public flag, and still governs reads through Storage's
+authenticated/signed-URL paths if those are used instead of the public
+one. Verified against a faithful stub of Supabase's real `storage`
+schema (not just reviewed by eye) since the genuine `storage` schema
+only exists inside an actual Supabase project.
+
+**Every `listings` row gets a matching `listing_internal` row at
+creation** (trigger, `security definer`), even with every field null.
+Without this, "no row" and "not authorized to see the row" were
+indistinguishable from the client, which the CRM needs to decide
+whether to show the Internal tab at all vs. show it empty.

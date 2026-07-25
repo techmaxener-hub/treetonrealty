@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { KanbanSquare, Users, ListTodo, LogOut } from "lucide-react";
+import { KanbanSquare, Users, ListTodo, LogOut, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, initials } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,6 +12,7 @@ import { useCurrentProfile } from "@/lib/hooks/use-current-profile";
 
 const NAV_ITEMS = [
   { href: "/crm/leads", label: "Leads", icon: KanbanSquare },
+  { href: "/crm/listings", label: "Listings", icon: Building2 },
   { href: "/crm/contacts", label: "Contacts", icon: Users },
   { href: "/crm/tasks", label: "Tasks", icon: ListTodo },
 ];
