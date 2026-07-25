@@ -30,5 +30,14 @@ jobs:
             echo "TENANT_SITE_URL repo variable is not set -- see this workflow's comments." >&2
             exit 1
           fi
-          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ vars.TENANT_SITE_URL }}/api/cron/automation"
+          status=$(curl -sS -o /tmp/response.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ vars.TENANT_SITE_URL }}/api/cron/automation")
+          echo "HTTP status: $status"
+          echo "Response body:"
+          cat /tmp/response.json
+          echo
+          if [ "$status" -ge 400 ]; then
+            echo "Request failed (see response body above for why)." >&2
+            exit 1
+          fi
