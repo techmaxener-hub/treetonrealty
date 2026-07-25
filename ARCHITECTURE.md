@@ -480,3 +480,128 @@ outgrown what a from-scratch template should opinionatedly ship anyway.
 keeps its own sidebar entry. The sidebar's active-link check needed an
 `exact` flag for this one item specifically, since every other CRM route
 also starts with `/crm` and would otherwise highlight alongside it.
+
+## Step 10 — broker onboarding flow
+
+Physical multi-tenancy means "onboarding" is two genuinely different
+problems wearing one name, and this step had to build both: the
+**platform side** (turning a signup request into a running, physically
+separate broker instance) and the **broker side** (a first-run wizard to
+finish setting up that instance once it exists). Nothing here was
+stubbed except the actual infrastructure API calls this environment has
+no credentials to make — same placeholder-credential precedent as
+Step 8's WhatsApp/SMTP providers.
+
+**The control plane got its first application code.** Through Step 9 it
+was only ever migrations — `broker_instances`/`provisioning_jobs`/
+`platform_admins` sat there with nothing reading or writing them. This
+step scaffolds `control-plane/` as a second, independent Next.js app
+(own `package.json`, own hand-written `Database` type, own copy of the
+hand-owned shadcn-style UI components) — deliberately not a shared
+package with tenant-template, matching the brief's "separate codebase
+per broker" decision from Step 1: the control plane is its own thing,
+not a broker's thing, and has no reason to share a deployable unit with
+either.
+
+**First-admin bootstrap, not a manual dashboard step.** `platform_admins`
+has no signup trigger by design (0002) — but something has to create the
+first row. `bootstrap_first_super_admin()` (0003) lets any signed-in
+`auth.users` row claim `super_admin` exactly once, only while the table
+is empty; every admin after that is invited by an existing super_admin
+through `/admin/team` instead (which mints the `auth.users` row via
+`auth.admin.inviteUserByEmail` service-role and then the `platform_admins`
+row in the same request). The login page calls bootstrap after every
+successful sign-in/sign-up and silently swallows the "already exists"
+error — harmless for everyone but the first person through the door.
+This is the same well-precedented "first user becomes admin" pattern
+countless self-hosted apps use (Wordpress, Discourse, etc.); the actual
+security boundary is controlling who can reach Supabase Auth sign-up on
+a fresh control-plane project at all, which is a platform-operator
+concern (e.g. disabling public sign-ups once the first admin exists),
+not something the app itself enforces.
+
+**Public signup never touches `broker_instances` directly.** `/signup`
+writes through `request_broker_signup()` into `broker_signup_requests`
+— same reasoning as the tenant template's `submit_lead`: a public writer
+proposes a handful of fields (business name, slug, owner contact) but
+must never set `status`/`reviewed_by`/`broker_instance_id` itself.
+`approve_broker_signup()` is the only thing that creates the real
+`broker_instances` row plus one `provisioning_jobs` row per
+`provisioning_step` (all `pending`) — it only builds the plan; running
+it is the application layer's job.
+
+**The provisioning orchestrator is honest about what a serverless admin
+panel can and can't do.** `advanceProvisioning()` runs one step at a time
+(find the earliest non-`done` job, run it, record the outcome), safe to
+call again on a failed step as a retry. Of the five real steps:
+- `create_project` and `deploy_frontend`/`assign_domain` are genuinely
+  wired to the real Supabase Management API and Vercel API, dry-running
+  (logs what it would do, fabricates a placeholder ref/URL so later
+  steps have something to reference) when their tokens are unset.
+- `run_migrations` and `seed_defaults` stay dry-run **by design**, not
+  just until configured. Actually running SQL against a brand-new,
+  dynamically-created Postgres database needs a live connection with
+  that project's own credentials, which this admin panel would have to
+  mint and hold just long enough to use — exactly the kind of
+  plaintext-secret handling `broker_instances.secrets_ref` exists to
+  avoid ("a pointer into a secrets manager", per its own comment in
+  0001). In a real deployment these two steps belong to the same
+  CI/deploy job that already has legitimate, short-lived access to a
+  freshly created database right after `create_project` — not a
+  request handler here. This is the same category of call as Step 8's
+  deliberate avoidance of `pg_net`: a real architecture boundary, flagged
+  rather than faked with a connection string this app shouldn't be
+  trusted to hold.
+
+**The broker-side wizard (`/crm/setup`) is reachable by construction, not
+convention.** `broker_profile` gained `onboarding_completed` (0012,
+tenant-template); middleware (not the layout) redirects a broker whose
+flag is false to `/crm/setup` on every `/crm/*` request except the
+wizard itself, because middleware is where the current pathname is
+cheaply available server-side — a layout-level check would have needed
+its own pathname plumbing for one route. Only `role = 'broker'` is ever
+redirected: every other role was invited into an org that, by
+definition, already has one.
+
+**Team invites didn't exist anywhere before this step** — a real gap:
+through Step 9, a new team member could only be created by someone
+manually inserting into `auth.users` outside the app. `/api/team/invite`
+(tenant-template) closes it: checks the caller is broker/employee against
+their own session first, then drops to the service client for
+`auth.admin.inviteUserByEmail`, passing `role`/`reports_to_id`/`full_name`
+as `user_metadata` — exactly what `handle_new_user()` (0002) already reads
+to create the matching `profiles` row on insert, so no new SQL was
+needed on the tenant side beyond the one column. If the rank-validation
+trigger would reject the invite (e.g. a lower rank being asked to manage
+a higher one), the whole `auth.users` insert rolls back and the error
+surfaces through the invite call as-is. `/invite/accept` closes the loop:
+Supabase's invite email lands there with a recovery token in the URL
+hash, the browser client's `detectSessionInUrl` exchanges it into a
+session automatically, and the page just asks for a password.
+
+**Skip-level reporting is the *default* invite path at first-run, not an
+edge case.** The setup wizard's invite step can only offer "reports to
+the broker" — nobody else exists yet — for any of employee/master_advisor/
+advisor. That's not a simplification; it's the hierarchy exactly as
+specified back in Step 2 ("if there's no employee, master advisors
+report directly to the broker"). Confirmed against the local test
+harness: an advisor invited straight under the broker gets a valid
+two-level `hierarchy_path` with nothing in between. The full Team page
+gets its own invite dialog once more people exist, letting a broker (or
+employee) pick any existing team member as the new hire's manager — the
+rank trigger is the only validation, not duplicated client-side.
+
+**Validated:** the control-plane onboarding migration (0003) against a
+seeded local Postgres cluster — the full happy path (bootstrap → public
+signup → approve → provisioning_jobs created → reject a second request)
+and five authorization/validation failure cases (double bootstrap,
+non-admin reading `broker_instances`, non-admin approving, re-approving
+an already-approved request, a garbage slug) all behave exactly as
+designed. The tenant-side onboarding migration (0012) was verified
+against the same 12-migration chain used every step: a broker upserting
+their own `broker_profile`, an employee correctly blocked by RLS from
+touching it, and the skip-level advisor-reports-to-broker invite
+producing a correct `hierarchy_path`. Both apps' `typecheck`/`lint`/
+`build` are clean, plus a dev-server smoke test of control-plane's
+public routes and middleware redirect behavior (`/signup` and `/login`
+200, unauthenticated `/admin` redirects 307 to `/login`).

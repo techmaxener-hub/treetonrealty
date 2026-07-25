@@ -26,11 +26,10 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isCrmRoute = request.nextUrl.pathname.startsWith("/crm");
-  const isSetupRoute = request.nextUrl.pathname.startsWith("/crm/setup");
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isLoginRoute = request.nextUrl.pathname.startsWith("/login");
 
-  if (isCrmRoute && !user) {
+  if (isAdminRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
@@ -39,23 +38,8 @@ export async function updateSession(request: NextRequest) {
 
   if (isLoginRoute && user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/crm/leads";
+    url.pathname = "/admin";
     return NextResponse.redirect(url);
-  }
-
-  // Only the broker who provisioned this instance goes through setup --
-  // everyone else was invited into an org that (by definition) already
-  // has one. Excludes /crm/setup itself so the wizard can render.
-  if (isCrmRoute && !isSetupRoute && user) {
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-    if (profile?.role === "broker") {
-      const { data: brokerProfile } = await supabase.from("broker_profile").select("onboarding_completed").maybeSingle();
-      if (!brokerProfile?.onboarding_completed) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/crm/setup";
-        return NextResponse.redirect(url);
-      }
-    }
   }
 
   return response;

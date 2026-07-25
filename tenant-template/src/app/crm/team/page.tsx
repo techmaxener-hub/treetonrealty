@@ -3,6 +3,7 @@ import { getTeamWithPublicProfiles } from "@/lib/data/advisor-profiles";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { TeamRowActions } from "@/components/crm/team-row-actions";
+import { InviteTeamMemberDialog } from "@/components/crm/invite-team-member-dialog";
 import { ROLE_LABELS } from "@/lib/constants";
 import type { ProfileRole } from "@/lib/types/database";
 
@@ -14,9 +15,12 @@ export default async function TeamPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b px-6 py-4">
-        <h1 className="text-lg font-semibold">Team</h1>
-        <p className="text-sm text-muted-foreground">Public profiles shown on the website&apos;s Team page.</p>
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <div>
+          <h1 className="text-lg font-semibold">Team</h1>
+          <p className="text-sm text-muted-foreground">Public profiles shown on the website&apos;s Team page.</p>
+        </div>
+        <InviteTeamMemberDialog candidates={team} />
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <Table>

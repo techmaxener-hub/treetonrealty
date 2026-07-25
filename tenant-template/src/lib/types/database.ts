@@ -73,6 +73,7 @@ export interface Database {
           supported_languages: string[];
           seo: Record<string, unknown>;
           years_in_business: number | null;
+          onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
         };
