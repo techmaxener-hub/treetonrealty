@@ -12,6 +12,7 @@ import { AssignSelect } from "@/components/crm/assign-select";
 import { ActivityComposer } from "@/components/crm/activity-composer";
 import { ActivityTimeline } from "@/components/crm/activity-timeline";
 import { TaskList } from "@/components/crm/task-list";
+import { NewDealDialog } from "@/components/crm/new-deal-dialog";
 import { LEAD_SOURCE_LABELS } from "@/lib/constants";
 import { formatCurrencyINR, localizedText } from "@/lib/utils";
 
@@ -118,6 +119,21 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                   <span>{localizedText(listing.title) || listing.slug}</span>
                 </div>
               ) : null}
+              {listing && contact && lead.stage !== "closed_won" && (
+                <>
+                  <Separator />
+                  <NewDealDialog
+                    team={team}
+                    prefill={{
+                      listingId: listing.id,
+                      listingLabel: localizedText(listing.title) || listing.slug,
+                      buyerContactId: contact.id,
+                      buyerLabel: contact.full_name,
+                      advisorId: lead.assigned_advisor_id,
+                    }}
+                  />
+                </>
+              )}
             </CardContent>
           </Card>
 

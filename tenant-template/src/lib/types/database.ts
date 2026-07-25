@@ -479,6 +479,10 @@ export interface Database {
         Args: { p_lead_id: string; p_new_stage: LeadStage };
         Returns: undefined;
       };
+      update_deal_stage: {
+        Args: { p_deal_id: string; p_new_stage: DealStage };
+        Returns: undefined;
+      };
     };
   };
 }

@@ -1,4 +1,7 @@
 import type {
+  DealDocType,
+  DealDocStatus,
+  DealStage,
   LeadScore,
   LeadSource,
   LeadStage,
@@ -111,3 +114,29 @@ export const LANGUAGES: { value: "en" | "hi" | "gu"; label: string }[] = [
   { value: "hi", label: "Hindi" },
   { value: "gu", label: "Gujarati" },
 ];
+
+export const DEAL_STAGES: { value: DealStage; label: string }[] = [
+  { value: "negotiation", label: "Negotiation" },
+  { value: "documentation", label: "Documentation" },
+  { value: "closed", label: "Closed" },
+];
+
+export const DEAL_DOC_TYPE_LABELS: Record<DealDocType, string> = {
+  agreement: "Agreement",
+  token_receipt: "Token Receipt",
+  kyc_buyer: "Buyer KYC",
+  kyc_seller: "Seller KYC",
+  other: "Other",
+};
+
+export const DEAL_DOC_STATUS_LABELS: Record<DealDocStatus, string> = {
+  pending: "Pending",
+  uploaded: "Uploaded",
+  verified: "Verified",
+};
+
+export const DEAL_DOC_STATUS_CLASSES: Record<DealDocStatus, string> = {
+  pending: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+  uploaded: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-900",
+  verified: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900",
+};

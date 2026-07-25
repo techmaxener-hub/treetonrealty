@@ -205,3 +205,23 @@ creation** (trigger, `security definer`), even with every field null.
 Without this, "no row" and "not authorized to see the row" were
 indistinguishable from the client, which the CRM needs to decide
 whether to show the Internal tab at all vs. show it empty.
+
+## Step 5 findings
+
+**`deal-documents` bucket is private**, unlike `listing-media`. Every
+read goes through `createSignedUrl` (60s expiry), not `getPublicUrl` —
+agreements and KYC scans don't get the same "reachable if you guess the
+path" trade-off photos got in Step 4. Verified against the same storage
+schema stub used in Step 4: anon gets zero access to this bucket at all,
+internal reads/writes follow the same broker/downline rule
+`deal_documents` already enforces at the table level.
+
+`deals` didn't inherit the Step 4 "unassigned row" bug — `primary_advisor_id`
+is `not null` at insert, so there's no null state for `in_own_downline()`
+to mishandle the way `advisor_id`/`assigned_advisor_id` could.
+
+Deal creation is reachable two ways: standalone from `/crm/deals` (search
+listing + buyer, pick primary advisor), or as "Create Deal" from a lead
+that already has a linked listing and contact — prefills listing, buyer,
+and advisor from the lead so a lead reaching negotiation doesn't mean
+re-entering data that already exists.
