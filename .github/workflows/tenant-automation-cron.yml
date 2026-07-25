@@ -1,0 +1,34 @@
+name: Tenant automation cron
+
+# Hostinger's git-connected "Websites" app hosting (what tenant-template
+# deploys to) has no built-in scheduled-job feature -- unlike Vercel,
+# which vercel.json's cron config targets. This is the replacement: hits
+# /api/cron/automation on a schedule, same as Vercel Cron would have,
+# driving the automation engine's time-based scans (SLA nudges, drip
+# follow-ups, etc.) and dispatch. See tenant-template/DEPLOY_HOSTINGER.md.
+#
+# Requires a repo secret named CRON_SECRET (Settings > Secrets and
+# variables > Actions) matching the CRON_SECRET environment variable set
+# on the Hostinger deployment -- this workflow can't set that for you.
+#
+# Requires a repo variable named TENANT_SITE_URL (Settings > Secrets and
+# variables > Actions > Variables tab) set to your deployed site's origin,
+# e.g. https://treetonrealty.b2bseomation.com (no trailing slash).
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/automation
+        run: |
+          if [ -z "${{ vars.TENANT_SITE_URL }}" ]; then
+            echo "TENANT_SITE_URL repo variable is not set -- see this workflow's comments." >&2
+            exit 1
+          fi
+          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ vars.TENANT_SITE_URL }}/api/cron/automation"
