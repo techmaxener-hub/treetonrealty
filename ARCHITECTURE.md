@@ -273,3 +273,43 @@ real backend, not a code defect, but the kind of thing `tsc`/`eslint`/
 page. Also deferred: an actual Instagram feed embed (Instagram's embed
 SDK is a separate integration surface) — the footer links out to the
 broker's Instagram instead of embedding a live feed.
+
+## Step 7 — lead-capture-to-CRM pipeline
+
+**WhatsApp clicks now create real leads, not just page_events.** A raw
+click carries no identity — nothing about it says who's asking — so
+"log it as a lead source" only means something if the click captures a
+name and phone first. `WhatsAppButton` now opens a two-field prompt
+before handing off to WhatsApp: submitting calls `submit_lead` with
+`source: 'whatsapp_click'` and opens the chat; a "Skip, just open
+WhatsApp" link stays one tap away and still logs the `page_event` for
+retargeting, for anyone who'd rather not. This is a lead-capture prompt,
+not a gate on reaching the business — deliberately not a dark pattern.
+
+**First-touch UTM attribution**, not last-touch: a campaign link's
+`utm_source`/`utm_campaign` only lives on the URL of whichever page it
+landed on, and client-side navigation drops query params the moment the
+visitor clicks anywhere else. `captureAttributionOnce()` grabs it into
+`sessionStorage` on first load and never overwrites it, so "how they
+found us" survives all the way to wherever they actually submit — the
+contact form or a WhatsApp click, possibly pages later. `resolveLeadSource()`
+maps a handful of known `utm_source` values (instagram, google, 99acres,
+etc.) onto the existing `lead_source` enum where there's an honest match,
+so a bio-link campaign shows up as an Instagram lead in the pipeline
+instead of a generic "website form" one — falling back to the
+channel-appropriate default otherwise. Surfaced `campaign`/`source_detail`
+on the CRM lead detail page too; tracking nobody in the CRM can see isn't
+tracking.
+
+**Returning-visitor prefill** (name/phone in `localStorage`) on both the
+contact form and the WhatsApp prompt — someone who already left their
+number once shouldn't have to retype it for a second enquiry in the same
+browser.
+
+**Explicitly not this step:** auto-assignment, instant WhatsApp/email
+acknowledgment to the lead, and agent notification — the brief scopes
+those under the automation engine (Step 8), which is also where the real
+WhatsApp Business API / email provider credentials get wired in as
+placeholders. This step only had to make sure a lead reliably lands in
+the CRM, correctly attributed; what happens automatically after that is
+Step 8's job.

@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
 import { CompareBar } from "@/components/site/compare-bar";
+import { AttributionCapture } from "@/components/site/attribution-capture";
 import type { BrokerContact } from "@/lib/types/broker-content";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   return (
     <LanguageProvider defaultLanguage={defaultLanguage}>
       <div className="flex min-h-screen flex-col">
+        <AttributionCapture />
         <SiteHeader broker={broker} />
         <main className="flex-1">{children}</main>
         <SiteFooter broker={broker} />

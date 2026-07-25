@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getRememberedContact, rememberContact } from "@/lib/visitor";
+import { resolveLeadSource } from "@/lib/utm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,20 +18,32 @@ export function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    const remembered = getRememberedContact();
+    if (remembered) {
+      setName(remembered.name);
+      setPhone(remembered.phone);
+    }
+  }, []);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     const supabase = createClient();
+    const { source, sourceDetail, campaign } = resolveLeadSource("website_form");
     const { error } = await supabase.rpc("submit_lead", {
       p_full_name: name,
       p_phone: phone,
       p_email: email || null,
-      p_source: "website_form",
+      p_source: source,
+      p_source_detail: sourceDetail,
+      p_campaign: campaign,
       p_message: message || null,
     });
     if (error) {
       toast.error(`Couldn't send: ${error.message}`);
     } else {
+      rememberContact(name, phone);
       setSubmitted(true);
     }
     setSubmitting(false);

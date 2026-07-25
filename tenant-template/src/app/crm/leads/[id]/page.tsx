@@ -105,6 +105,20 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 <span className="text-muted-foreground">Source</span>
                 <span>{LEAD_SOURCE_LABELS[lead.source]}</span>
               </div>
+              {lead.campaign && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Campaign</span>
+                  <span>{lead.campaign}</span>
+                </div>
+              )}
+              {lead.source_detail && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Detail</span>
+                  <span className="max-w-[60%] truncate text-right" title={lead.source_detail}>
+                    {lead.source_detail}
+                  </span>
+                </div>
+              )}
               {(lead.budget_min || lead.budget_max) && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Budget</span>
