@@ -137,6 +137,32 @@ stripping non-digits) plus an `AFTER INSERT` trigger that sets
 phone entry varies too much (+91, leading 0, spacing) for that to be
 safe without false rejections.
 
+## Tenant app stack (Step 3)
+
+`tenant-template/` is a single Next.js (App Router) app serving both the
+CRM (`/crm/*`, behind auth middleware) and, from Step 6 on, the public
+site — one deployment per broker, matching the physical-isolation model
+above, rather than two separate frontends per broker. UI primitives are
+hand-written shadcn/ui source (Radix + Tailwind), not an installed
+component package — normal for shadcn, keeps every component editable
+in-repo.
+
+**Version pin worth knowing:** `@supabase/ssr` versions before `~0.10`
+declare `createBrowserClient`/`createServerClient` against an older
+`SupabaseClient` generic signature than current `@supabase/supabase-js`
+(2.100+) uses — pinning an old `@supabase/ssr` produces a client whose
+type collapses every row to `never` app-wide, which looks exactly like a
+broken `Database` type and is not. Fixed by bumping `@supabase/ssr` to
+`^0.12.3`. Data-layer functions take a `TypedSupabaseClient` (derived
+from `ReturnType<typeof createBrowserClient<Database>>` in
+`lib/supabase/types.ts`) rather than a hand-written `SupabaseClient<Database>`
+annotation, which sidesteps this class of mismatch even if the versions
+drift again later.
+
+The hand-written `Database` type (`lib/types/database.ts`) has no live
+Supabase project to generate from yet — regenerate via the CLI once one
+exists, and diff against this file rather than trusting it blindly.
+
 ## Deferred, not forgotten
 
 - `page_events` partitioning (monthly range on `created_at`) once volume
