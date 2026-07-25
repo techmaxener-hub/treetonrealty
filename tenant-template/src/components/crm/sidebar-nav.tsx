@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { KanbanSquare, Users, ListTodo, LogOut, Building2, HandCoins } from "lucide-react";
+import { KanbanSquare, Users, ListTodo, LogOut, Building2, HandCoins, Contact } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, initials } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/crm/deals", label: "Deals", icon: HandCoins },
   { href: "/crm/contacts", label: "Contacts", icon: Users },
   { href: "/crm/tasks", label: "Tasks", icon: ListTodo },
+  { href: "/crm/team", label: "Team", icon: Contact },
 ];
 
 export function SidebarNav() {

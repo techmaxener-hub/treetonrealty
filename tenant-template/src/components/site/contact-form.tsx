@@ -1,0 +1,71 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+export function ContactForm() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("submit_lead", {
+      p_full_name: name,
+      p_phone: phone,
+      p_email: email || null,
+      p_source: "website_form",
+      p_message: message || null,
+    });
+    if (error) {
+      toast.error(`Couldn't send: ${error.message}`);
+    } else {
+      setSubmitted(true);
+    }
+    setSubmitting(false);
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+        Thanks — we&apos;ll be in touch shortly.
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="contact_name">Name</Label>
+        <Input id="contact_name" required value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="contact_phone">Phone</Label>
+          <Input id="contact_phone" required value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="contact_email">Email</Label>
+          <Input id="contact_email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="contact_message">What are you looking for?</Label>
+        <Textarea id="contact_message" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
+      </div>
+      <Button type="submit" disabled={submitting || !name.trim() || !phone.trim()}>
+        {submitting ? "Sending…" : "Send"}
+      </Button>
+    </form>
+  );
+}

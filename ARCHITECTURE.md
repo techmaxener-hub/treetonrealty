@@ -225,3 +225,51 @@ listing + buyer, pick primary advisor), or as "Create Deal" from a lead
 that already has a linked listing and contact — prefills listing, buyer,
 and advisor from the lead so a lead reaching negotiation doesn't mean
 re-entering data that already exists.
+
+## Step 6 findings
+
+**Public pages needed advisor names; `profiles.full_name` isn't public,
+on purpose.** Building the Team page surfaced a real gap: `advisor_profiles`
+(the table designed for public content back in Step 1) never actually
+carried a name field, so every join for public display would have had
+to reach into `profiles` — which correctly has no `anon` policy at all.
+Fixed in `0008` by adding `advisor_profiles.display_name` directly,
+rather than opening `profiles` up. Verified against the storage/RLS stub:
+anon gets zero rows from `profiles.full_name`, and reads
+`advisor_profiles.display_name` fine. This also meant there was no CRM
+screen to populate `advisor_profiles` at all — added a minimal
+`/crm/team` page (self-service for your own public profile, broker can
+edit anyone's) so the public site has somewhere its content actually
+comes from, not just a schema with nothing to read.
+
+**`advisor-photos` bucket is public**, same call as `listing-media` in
+Step 4 and for the same reason — a headshot on the table explicitly
+built for public marketing content isn't worth signed-URL complexity.
+Write access is scoped to `{profile_id}/...` matching `auth.uid()`, or
+the broker.
+
+**Multi-language is client-side-reactive, not locale-routed.** All three
+language variants come back in the same `jsonb` fetch (one request,
+whichever page), and a `LanguageProvider` context picks which key to
+render — toggling is instant, no refetch. This is a deliberate scope cut
+from "true" i18n routing (`/hi/...` paths with per-locale SSR, which
+would give each language its own indexable URL and meta tags): the
+toggle works and content is correct per language, but a search engine
+crawling once only sees whichever language rendered for that request.
+Worth revisiting if a broker's Hindi/Gujarati SEO becomes a priority
+rather than the toggle being a usability nice-to-have.
+
+**`force-dynamic` pages are never executed by `next build`** — it only
+type-checks and bundles them; the actual Server Component data-fetching
+code doesn't run until a real request hits the route. Confirmed via
+`next dev` against a placeholder Supabase URL: `/login` and `/compare`
+(empty-state path, no DB call) return 200, `/crm` redirects correctly
+through middleware with no session, and `/` fails with a clean
+`ENOTFOUND` from the fetch layer — the expected failure mode with no
+real backend, not a code defect, but the kind of thing `tsc`/`eslint`/
+`next build` alone would never have caught either way.
+
+**Deferred, matching the brief's own "optional":** the Blog/Insights
+page. Also deferred: an actual Instagram feed embed (Instagram's embed
+SDK is a separate integration surface) — the footer links out to the
+broker's Instagram instead of embedding a live feed.

@@ -102,6 +102,7 @@ export interface Database {
           id: string;
           profile_id: string;
           slug: string;
+          display_name: string;
           bio: LocalizedText;
           specialization: string[];
           years_experience: number | null;
@@ -114,7 +115,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["advisor_profiles"]["Row"]> & { profile_id: string; slug: string };
+        Insert: Partial<Database["public"]["Tables"]["advisor_profiles"]["Row"]> & { profile_id: string; slug: string; display_name: string };
         Update: Partial<Database["public"]["Tables"]["advisor_profiles"]["Row"]>;
         Relationships: [];
       };
