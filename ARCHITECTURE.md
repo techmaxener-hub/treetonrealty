@@ -411,3 +411,72 @@ message copy per language — all without a migration. Nine rules and
 twelve templates ship as real, active defaults (migration `0010`),
 not stubs; "wire every workflow" only means something if there's live
 copy to send on day one.
+
+## Step 9 — reporting & analytics dashboards
+
+**Report functions do no access-control work of their own — they just
+reshape rows RLS already scoped.** All ten `report_*` functions
+(migration `0011`) are plain `language sql` functions with no `security
+definer`, i.e. `SECURITY INVOKER` (Postgres's default): each runs as the
+calling user, so a `select ... from leads group by stage` inside one of
+them is filtered by exactly the same RLS policies that already govern the
+lead pipeline, deal board, and listings pages. No new visibility rule
+exists anywhere in this migration. That's what makes `report_team_performance`
+degrade correctly by role without an if/else anywhere: a broker/employee's
+`profiles` + `leads` + `deals` reads are unrestricted, so the table shows
+the whole org; a master_advisor's reads are downline-scoped, so the same
+query rolls up just their downline; a leaf advisor's downline is only
+themselves, so the same query reads as "my performance." Three functions
+naturally return empty for anyone who isn't broker/employee —
+`report_top_viewed_listings` (`page_events` is broker/employee-only, see
+0002) and `report_automation_summary` (`automation_rules`/`automation_logs`
+likewise) — and the dashboard just hides those cards when empty rather
+than treating that as an error, same pattern as the automation settings
+page from Step 8.
+
+**Revenue/commission is attributed to `deals.primary_advisor_id` only.**
+`commission_split` can divide a deal's payout across multiple advisors
+(e.g. a referring sub-broker up the chain), but summing split shares
+per-advisor across every deal they appear in — as either primary or
+split recipient — is a materially different, heavier report. This one
+matches what the existing deal pipeline UI already shows per deal, not a
+new decision.
+
+**Correction while testing:** `report_team_performance`'s first draft
+joined `leads`/`deals` through `advisor_profiles` (`ap.id = l.assigned_advisor_id`)
+by copying the join shape from the Step 2 RLS helpers — but migration
+`0003` (Step 3) already repointed `listings.advisor_id` /
+`leads.assigned_advisor_id` / `deals.primary_advisor_id` straight at
+`profiles(id)`, specifically so any team member is assignable, not just
+ones with a public advisor bio. The stale join wasn't just redundant, it
+was wrong (silently dropped every advisor without an `advisor_profiles`
+row). Caught immediately by the local test harness — seeding a listing
+with that FK failed outright — fixed by joining `leads`/`deals` on
+`profiles(id)` directly.
+
+**Local test harness gained a role-hierarchy fixture.** Earlier steps'
+harnesses seeded just enough rows to exercise one feature; this step
+needed a real org (broker → employee → master_advisor → advisor, plus a
+second, disjoint master_advisor/advisor branch) to prove downline
+scoping actually isolates siblings, not just parent/child. Also needed
+two additions to the harness itself, now worth keeping for future steps:
+`auth.users.raw_user_meta_data` (the real `handle_new_user()` trigger
+reads it to create each seeded profile — inserting into `profiles`
+directly and bypassing the trigger had been masking the FK issue above),
+and explicit `grant select/insert/update/delete ... to anon, authenticated`
+on the public schema (a real Supabase project pre-grants this at the
+platform level; a from-scratch local Postgres cluster doesn't, so RLS
+alone isn't testable without also replicating the grant).
+
+**Charts are hand-rolled divs, not a charting library.** `ReportBarList`
+(horizontal, width-proportional) and `ReportTimeSeries` (vertical bars,
+height-proportional) are the entire charting surface — no new dependency,
+consistent with how the rest of the CRM avoids pulling in UI libraries
+beyond Radix primitives + Tailwind. Sufficient for funnels, breakdowns,
+and short time series; a broker who wants richer visualization has
+outgrown what a from-scratch template should opinionatedly ship anyway.
+
+**`/crm` is now the dashboard**, not a redirect to `/crm/leads` — Leads
+keeps its own sidebar entry. The sidebar's active-link check needed an
+`exact` flag for this one item specifically, since every other CRM route
+also starts with `/crm` and would otherwise highlight alongside it.

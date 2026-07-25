@@ -493,6 +493,55 @@ export interface Database {
         Args: Record<string, never>;
         Returns: Record<string, number>;
       };
+      report_lead_funnel: {
+        Args: Record<string, never>;
+        Returns: { stage: LeadStage; total: number }[];
+      };
+      report_lead_sources: {
+        Args: Record<string, never>;
+        Returns: { source: LeadSource; total: number; won: number }[];
+      };
+      report_leads_over_time: {
+        Args: { p_days?: number };
+        Returns: { day: string; total: number }[];
+      };
+      report_deal_summary: {
+        Args: Record<string, never>;
+        Returns: { stage: DealStage; total: number; total_value: number; total_commission: number }[];
+      };
+      report_deals_closed_over_time: {
+        Args: { p_months?: number };
+        Returns: { month: string; total: number; total_value: number }[];
+      };
+      report_listing_status_breakdown: {
+        Args: Record<string, never>;
+        Returns: { status: ListingStatus; total: number }[];
+      };
+      report_listing_segment_breakdown: {
+        Args: Record<string, never>;
+        Returns: { segment: ListingSegment; total: number }[];
+      };
+      report_top_viewed_listings: {
+        Args: { p_limit?: number };
+        Returns: { listing_id: string; title: LocalizedText; views: number }[];
+      };
+      report_team_performance: {
+        Args: Record<string, never>;
+        Returns: {
+          profile_id: string;
+          full_name: string;
+          role: ProfileRole;
+          leads_assigned: number;
+          leads_won: number;
+          deals_closed: number;
+          revenue: number;
+          commission: number;
+        }[];
+      };
+      report_automation_summary: {
+        Args: { p_days?: number };
+        Returns: { trigger_type: AutomationTriggerType; sent: number; failed: number; pending: number }[];
+      };
     };
   };
 }

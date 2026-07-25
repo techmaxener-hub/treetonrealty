@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { KanbanSquare, Users, ListTodo, LogOut, Building2, HandCoins, Contact, Zap } from "lucide-react";
+import { KanbanSquare, Users, ListTodo, LogOut, Building2, HandCoins, Contact, Zap, LayoutDashboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, initials } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import { ROLE_LABELS } from "@/lib/constants";
 import { useCurrentProfile, canManage } from "@/lib/hooks/use-current-profile";
 
 const NAV_ITEMS = [
+  { href: "/crm", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/crm/leads", label: "Leads", icon: KanbanSquare },
   { href: "/crm/listings", label: "Listings", icon: Building2 },
   { href: "/crm/deals", label: "Deals", icon: HandCoins },
@@ -43,7 +44,7 @@ export function SidebarNav() {
 
       <nav className="flex flex-1 flex-col gap-0.5 p-2">
         {navItems.map((item) => {
-          const active = pathname.startsWith(item.href);
+          const active = "exact" in item && item.exact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
