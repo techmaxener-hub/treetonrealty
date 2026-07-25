@@ -56,16 +56,41 @@ consistent, `ltree` ships as a core Postgres extension.
 Lead/listing/deal assignment has **no role restriction** — broker,
 employee, master_advisor, and advisor can all be assigned work.
 
-## RLS
+## Auth & RLS (implemented Step 2)
 
-Enabled on every table at creation (deny-by-default); policies land in
-Step 2. Planned shape: `role = 'broker'` sees/writes everything in the
-project. Everyone else sees rows assigned to themself *and* their
-downline (`hierarchy_path <@`), read-only on the downline — writes stay
-limited to `assigned_advisor_id = auth.uid()`. `listing_internal`,
-`listing_owners`, and commission fields on `deals` get no `anon` policy
-at all. The public site reads through `anon` scoped to `is_published =
-true`, and inserts only into `leads`, `page_events`, `saved_searches`.
+`profiles` rows are never created by the client — `handle_new_user()`
+(trigger on `auth.users`, `security definer`) reads `role` /
+`reports_to_id` / `full_name` out of the invite's `user_metadata` and
+inserts the row. Whoever calls `supabase.auth.admin.inviteUserByEmail`
+sets that metadata; there is no public self-signup path in the tenant
+project. Self-service profile edits are allowed (`id = auth.uid()`) but
+a trigger (`profiles_restrict_self_edit`) blocks anyone but the broker
+from changing their own `role` or `reports_to_id` — RLS alone can't
+express a column-level restriction, so this is enforced separately.
+
+Policy shape: `role = 'broker'` sees/writes everything. Everyone else
+sees themself + downline (`hierarchy_path <@`, via the
+`in_own_downline()` / `advisor_in_own_downline()` helpers), read-only on
+the downline — writes stay scoped to what they directly own.
+`listing_internal`, `listing_owners`, and `deals`/`deal_documents` have
+no `anon` policy at all, so they're unreachable from the public site
+regardless of row content. **Unassigned leads are visible to the whole
+internal team, not gated to broker/employee** — a deliberate call so any
+available advisor can pick up a fresh inbound lead rather than it sitting
+until someone triages it; revisit if that turns out to encourage
+lead-sniping over fair distribution.
+
+The public site never gets direct `INSERT` policies on `contacts`,
+`leads`, `page_events`, or `saved_searches` — a public form stuffing
+arbitrary columns or bypassing dedup is worse than the extra hop. Instead
+three `security definer` RPCs (`submit_lead`, `log_page_event`,
+`create_saved_search`) are the entire public write surface, each with a
+narrow, typed parameter list, granted to `anon`.
+
+All of the above — the hierarchy triggers, the RLS boundaries, the
+self-edit guard, the dedup-reusing RPC — were exercised against a local
+Postgres instance with simulated `anon`/`authenticated` roles before
+being committed, not just reviewed by eye.
 
 ## Multi-language content
 
