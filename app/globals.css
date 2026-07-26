@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Ivory Warm White surface, Deep Charcoal text, Champagne Gold accent */
+    --background: 45 33% 97%;
+    --foreground: 222 22% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 22% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 22% 13%;
+
+    --primary: 222 22% 13%;
+    --primary-foreground: 45 33% 97%;
+
+    --secondary: 43 39% 93%;
+    --secondary-foreground: 222 22% 13%;
+
+    --muted: 43 25% 92%;
+    --muted-foreground: 222 12% 40%;
+
+    --accent: 46 56% 52%;
+    --accent-foreground: 222 22% 13%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 33% 97%;
+
+    --border: 43 20% 88%;
+    --input: 43 20% 88%;
+    --ring: 46 56% 52%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 26% 11%;
+    --foreground: 45 20% 94%;
+
+    --card: 222 24% 14%;
+    --card-foreground: 45 20% 94%;
+
+    --popover: 222 24% 14%;
+    --popover-foreground: 45 20% 94%;
+
+    --primary: 45 33% 97%;
+    --primary-foreground: 222 22% 13%;
+
+    --secondary: 222 20% 20%;
+    --secondary-foreground: 45 20% 94%;
+
+    --muted: 222 18% 20%;
+    --muted-foreground: 43 12% 65%;
+
+    --accent: 46 56% 58%;
+    --accent-foreground: 222 22% 13%;
+
+    --destructive: 0 63% 42%;
+    --destructive-foreground: 45 20% 94%;
+
+    --border: 222 18% 24%;
+    --input: 222 18% 24%;
+    --ring: 46 56% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Glassmorphic surfaces used by the sticky header, filter drawers, etc. */
+  .glass {
+    @apply bg-white/60 backdrop-blur-xl backdrop-saturate-150 border border-white/40;
+  }
+  .glass-dark {
+    @apply bg-charcoal/60 backdrop-blur-xl backdrop-saturate-150 border border-white/10;
+  }
+
+  .text-gradient-gold {
+    @apply bg-champagne-gradient bg-clip-text text-transparent;
+  }
+
+  .shimmer-gold {
+    background: linear-gradient(
+      110deg,
+      rgba(212, 175, 55, 0.15) 25%,
+      rgba(212, 175, 55, 0.4) 50%,
+      rgba(212, 175, 55, 0.15) 75%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
