@@ -16,7 +16,7 @@ function TestimonialCard({ testimonial }: { testimonial: Tables<"testimonials"> 
         ))}
       </div>
       {content ? <p className="flex-1 text-sm leading-relaxed text-foreground/80">&ldquo;{content}&rdquo;</p> : null}
-      <p className="mt-4 font-display text-base">{testimonial.client_name}</p>
+      <p className="mt-4 text-sm font-semibold">{testimonial.client_name}</p>
     </div>
   );
 }

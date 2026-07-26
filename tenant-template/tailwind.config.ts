@@ -50,13 +50,6 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      fontFamily: {
-        // Additive only -- doesn't change Tailwind's default `sans`
-        // (still the system stack the CRM uses). `font-display` is an
-        // opt-in utility for elements that need the serif treatment but
-        // aren't a semantic h1-h3 (.site-theme already covers those).
-        display: ["var(--font-fraunces)", "ui-serif", "Georgia", "serif"],
-      },
     },
   },
   plugins: [animate],

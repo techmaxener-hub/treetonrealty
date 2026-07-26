@@ -605,3 +605,60 @@ producing a correct `hierarchy_path`. Both apps' `typecheck`/`lint`/
 `build` are clean, plus a dev-server smoke test of control-plane's
 public routes and middleware redirect behavior (`/signup` and `/login`
 200, unauthenticated `/admin` redirects 307 to `/login`).
+
+## Public site, second design pass — portal-style redirect
+
+The warm-cream/serif direction from the first design pass (above) was
+short-lived: the user pointed at a specific reference (a Dubai luxury
+real-estate portal, "Arabian Estates") and asked for that visual
+language with Ahmedabad content, superseding it. Notes on what changed
+and why, since this reverses several of the previous pass's specific
+choices:
+
+**Photography-led navy/white, not warm-editorial.** `.site-theme`'s
+tokens (`globals.css`) were rewritten wholesale: near-black navy for
+text and every solid surface (buttons, badges, the nav overlay), white
+cards on a barely-tinted gray background — closer to a property-portal
+than a boutique brochure. The Fraunces serif font was dropped entirely
+(unused weight/latency for no visual payoff once the direction no
+longer calls for it) — headings now use Inter at light/medium weights
+instead of a second typeface.
+
+**Search starts in the hero, not on a separate page.** `HeroSearchWidget`
+(Buy/Rent tabs + locality/type/BHK/price fields) posts straight to
+`/listings` with the same query params the existing filter bar already
+used — `offer_type` filtering didn't exist on `getPublishedListings`
+before this pass, so it was added to both entry points together rather
+than teaching the hero widget a search shape the results page couldn't
+actually honor.
+
+**Listings became a list, not a grid, specifically to carry a real
+agent-contact cluster per row** — the reference's most distinctive,
+and most genuinely useful, idea: pairing every result with whoever's
+actually handling it (photo, name, Call/WhatsApp/Email), not just a
+photo and a price. This only works with real data, which exposed a gap:
+`advisor_profiles` had no public phone/WhatsApp field at all — every
+public CTA site-wide had always meant the office's single number
+(`broker_profile.contact`, the Step 6/7 decision). Migration `0013`
+adds `public_phone`/`public_whatsapp`, both nullable and opt-in; a
+listing's contact cluster uses the assigned advisor's own line when a
+broker's set one, and falls back to the office number otherwise — the
+single-office-number default never broke, it just gained an override.
+
+**Deliberately not built this pass:** the reference's calculator row
+(mortgage/rental-yield/buy-vs-rent), a self-serve "list your property"
+submission form, and a "valuate your property" tool. None of these are
+in the original brief (which asks for an EMI calculator specifically,
+already built, on every listing detail page) — they're Dubai
+investment-market conventions, not confirmed as wanted here, and each
+is a real standalone feature rather than a styling change. Flagged
+rather than quietly built or quietly skipped.
+
+**Validated:** migration `0013` applied cleanly against the full
+13-migration chain on a fresh local Postgres cluster. Both new
+public-facing components (`HeroSearchWidget`, `FeaturedListingsCarousel`,
+`ListingRow`) and every touched page/component pass `typecheck`/`lint`/
+`build`. No live-database visual verification was possible from this
+environment (no reachable Supabase project here) — verified structurally
+and via a static HTML preview built from the same tokens instead;
+real-browser confirmation is on the user once deployed.

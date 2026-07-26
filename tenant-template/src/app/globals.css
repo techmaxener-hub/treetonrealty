@@ -60,36 +60,46 @@
 /* Public-site theme, scoped -- applied only to the (marketing) route
    group's root wrapper. Overrides the same semantic token names the CRM
    uses, so every shared shadcn-style component (Card, Button, Badge...)
-   picks up the warmer, editorial palette automatically without a single
-   component needing a site-specific variant. The CRM/login/invite pages
-   never get this class and keep the original neutral tokens. */
+   picks up the site's palette automatically without a single component
+   needing a site-specific variant. The CRM/login/invite pages never get
+   this class and keep the original neutral tokens.
+
+   Navy-and-white, photography-led -- a deliberate direction change from
+   the warm-cream/serif pass (see ARCHITECTURE.md): near-black navy for
+   text and every solid surface (buttons, badges, the nav overlay), pure
+   white cards floating on a barely-tinted gray background, so property
+   photography carries the color instead of the UI chrome. */
 .site-theme {
-  --background: 36 33% 97%;
-  --foreground: 20 14% 11%;
+  --background: 210 20% 98%;
+  --foreground: 205 45% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 20 14% 11%;
+  --card-foreground: 205 45% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 20 14% 11%;
-  --primary: 152 45% 18%;
+  --popover-foreground: 205 45% 10%;
+  --primary: 205 45% 10%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 36 22% 92%;
-  --secondary-foreground: 20 14% 11%;
-  --muted: 36 22% 92%;
-  --muted-foreground: 20 8% 40%;
-  --accent: 152 38% 91%;
-  --accent-foreground: 152 45% 16%;
+  --secondary: 210 16% 93%;
+  --secondary-foreground: 205 45% 10%;
+  --muted: 210 16% 93%;
+  --muted-foreground: 210 10% 42%;
+  --accent: 210 20% 92%;
+  --accent-foreground: 205 45% 10%;
   --destructive: 0 65% 42%;
   --destructive-foreground: 0 0% 100%;
-  --border: 30 15% 87%;
-  --input: 30 15% 87%;
-  --ring: 152 45% 18%;
-  --radius: 0.625rem;
+  --border: 210 14% 88%;
+  --input: 210 14% 88%;
+  --ring: 205 45% 10%;
+  --radius: 0.5rem;
 
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-.site-theme h1,
+.site-theme h1 {
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
 .site-theme h2,
 .site-theme h3 {
-  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-weight: 500;
 }

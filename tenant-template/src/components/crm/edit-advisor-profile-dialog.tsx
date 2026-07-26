@@ -41,6 +41,8 @@ export function EditAdvisorProfileDialog({
   const [languagesSpoken, setLanguagesSpoken] = useState(existing?.languages_spoken.join(", ") ?? "");
   const [linkedinUrl, setLinkedinUrl] = useState(existing?.linkedin_url ?? "");
   const [instagramUrl, setInstagramUrl] = useState(existing?.instagram_url ?? "");
+  const [publicPhone, setPublicPhone] = useState(existing?.public_phone ?? "");
+  const [publicWhatsapp, setPublicWhatsapp] = useState(existing?.public_whatsapp ?? "");
   const [isPublic, setIsPublic] = useState(existing?.is_public ?? true);
   const [photoUrl, setPhotoUrl] = useState(existing?.photo_url ?? "");
 
@@ -76,6 +78,8 @@ export function EditAdvisorProfileDialog({
       languages_spoken: languagesSpoken.split(",").map((s) => s.trim()).filter(Boolean),
       linkedin_url: linkedinUrl || null,
       instagram_url: instagramUrl || null,
+      public_phone: publicPhone || null,
+      public_whatsapp: publicWhatsapp || null,
       is_public: isPublic,
       photo_url: photoUrl || null,
     };
@@ -159,6 +163,17 @@ export function EditAdvisorProfileDialog({
             <div className="flex flex-col gap-1.5">
               <Label>Instagram URL</Label>
               <Input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>Direct phone (optional)</Label>
+              <Input value={publicPhone} onChange={(e) => setPublicPhone(e.target.value)} placeholder="Shown on their listings" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Direct WhatsApp (optional)</Label>
+              <Input value={publicWhatsapp} onChange={(e) => setPublicWhatsapp(e.target.value)} placeholder="Falls back to the office number" />
             </div>
           </div>
 

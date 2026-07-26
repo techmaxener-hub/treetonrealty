@@ -111,6 +111,8 @@ export interface Database {
           photo_url: string | null;
           linkedin_url: string | null;
           instagram_url: string | null;
+          public_phone: string | null;
+          public_whatsapp: string | null;
           is_public: boolean;
           display_order: number;
           created_at: string;

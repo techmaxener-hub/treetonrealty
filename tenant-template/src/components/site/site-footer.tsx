@@ -11,7 +11,7 @@ export function SiteFooter({ broker }: { broker: Tables<"broker_profile"> | null
     <footer className="mt-24 bg-foreground text-background">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 md:grid-cols-4">
         <div>
-          <p className="font-display text-xl">{broker?.display_name ?? "Realty"}</p>
+          <p className="text-lg font-medium uppercase tracking-[0.1em]">{broker?.display_name ?? "Realty"}</p>
           {broker?.years_in_business ? (
             <p className="mt-2 text-sm text-background/60">{broker.years_in_business}+ years in business</p>
           ) : null}

@@ -1,9 +1,18 @@
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
-import type { Tables, ListingSegment, ListingStatus, PropertyTypeEnum } from "@/lib/types/database";
+import type { Tables, ListingSegment, ListingStatus, ListingOfferType, PropertyTypeEnum } from "@/lib/types/database";
+
+export type ListingAdvisor = {
+  displayName: string;
+  photoUrl: string | null;
+  slug: string;
+  publicPhone: string | null;
+  publicWhatsapp: string | null;
+};
 
 export type PublicListingCard = Tables<"listings"> & {
   localityName: string | null;
   coverUrl: string | null;
+  advisor: ListingAdvisor | null;
 };
 
 export type ListingFilters = {
@@ -12,6 +21,7 @@ export type ListingFilters = {
   propertyType?: PropertyTypeEnum;
   segment?: ListingSegment;
   status?: ListingStatus;
+  offerType?: ListingOfferType;
   bhk?: number;
   priceMin?: number;
   priceMax?: number;
@@ -29,6 +39,7 @@ export async function getPublishedListings(supabase: TypedSupabaseClient, filter
   if (filters.propertyType) query = query.eq("property_type", filters.propertyType);
   if (filters.segment) query = query.eq("segment", filters.segment);
   if (filters.status) query = query.eq("status", filters.status);
+  if (filters.offerType) query = query.eq("offer_type", filters.offerType);
   if (filters.bhk) query = query.eq("bhk", filters.bhk);
   if (filters.priceMin) query = query.gte("price", filters.priceMin);
   if (filters.priceMax) query = query.lte("price", filters.priceMax);
@@ -37,22 +48,44 @@ export async function getPublishedListings(supabase: TypedSupabaseClient, filter
   if (error) throw error;
   if (!listings?.length) return [];
 
-  const [{ data: localities }, { data: covers }] = await Promise.all([
+  const advisorProfileIds = [...new Set(listings.map((l) => l.advisor_id).filter((id): id is string => Boolean(id)))];
+
+  const [{ data: localities }, { data: covers }, { data: advisorProfiles }] = await Promise.all([
     supabase.from("localities").select("id, name"),
     supabase
       .from("listing_media")
       .select("listing_id, url")
       .in("listing_id", listings.map((l) => l.id))
       .eq("is_cover", true),
+    advisorProfileIds.length > 0
+      ? supabase
+          .from("advisor_profiles")
+          .select("profile_id, display_name, photo_url, slug, public_phone, public_whatsapp")
+          .in("profile_id", advisorProfileIds)
+          .eq("is_public", true)
+      : Promise.resolve({ data: [] as Tables<"advisor_profiles">[] }),
   ]);
 
   const localityById = new Map((localities ?? []).map((l) => [l.id, l.name]));
   const coverByListingId = new Map((covers ?? []).map((c) => [c.listing_id, c.url]));
+  const advisorByProfileId = new Map(
+    (advisorProfiles ?? []).map((a) => [
+      a.profile_id,
+      {
+        displayName: a.display_name,
+        photoUrl: a.photo_url,
+        slug: a.slug,
+        publicPhone: a.public_phone,
+        publicWhatsapp: a.public_whatsapp,
+      } satisfies ListingAdvisor,
+    ]),
+  );
 
   return listings.map((listing) => ({
     ...listing,
     localityName: listing.locality_id ? (localityById.get(listing.locality_id) ?? null) : null,
     coverUrl: coverByListingId.get(listing.id) ?? null,
+    advisor: listing.advisor_id ? (advisorByProfileId.get(listing.advisor_id) ?? null) : null,
   }));
 }
 

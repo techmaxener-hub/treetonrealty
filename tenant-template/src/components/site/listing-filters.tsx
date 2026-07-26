@@ -4,8 +4,9 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { PROPERTY_TYPE_LABELS, SEGMENT_LABELS } from "@/lib/constants";
-import type { PropertyTypeEnum, ListingSegment } from "@/lib/types/database";
+import type { PropertyTypeEnum, ListingSegment, ListingOfferType } from "@/lib/types/database";
 import type { LocalityLite } from "@/lib/data/localities";
 
 const ALL = "__all__";
@@ -22,8 +23,26 @@ export function ListingFilters({ localities }: { localities: LocalityLite[] }) {
     router.push(`${pathname}?${params.toString()}`);
   }
 
+  const offer = searchParams.get("offer") ?? ALL;
+
   return (
     <div className="flex flex-wrap items-center gap-2">
+      <div className="flex rounded-full border border-border p-0.5">
+        {(["__all__", "sale", "rent"] as (ListingOfferType | typeof ALL)[]).map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => updateParam("offer", v)}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+              offer === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {v === "__all__" ? "All" : v === "sale" ? "Buy" : "Rent"}
+          </button>
+        ))}
+      </div>
+
       <Select value={searchParams.get("locality") ?? ALL} onValueChange={(v) => updateParam("locality", v)}>
         <SelectTrigger className="w-40">
           <SelectValue placeholder="Locality" />
