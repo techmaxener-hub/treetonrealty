@@ -19,7 +19,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
 
   return (
     <LanguageProvider defaultLanguage={defaultLanguage}>
-      <div className="flex min-h-screen flex-col">
+      <div className="site-theme flex min-h-screen flex-col bg-background text-foreground">
         <AttributionCapture />
         <SiteHeader broker={broker} />
         <main className="flex-1">{children}</main>

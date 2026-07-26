@@ -56,3 +56,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Public-site theme, scoped -- applied only to the (marketing) route
+   group's root wrapper. Overrides the same semantic token names the CRM
+   uses, so every shared shadcn-style component (Card, Button, Badge...)
+   picks up the warmer, editorial palette automatically without a single
+   component needing a site-specific variant. The CRM/login/invite pages
+   never get this class and keep the original neutral tokens. */
+.site-theme {
+  --background: 36 33% 97%;
+  --foreground: 20 14% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14% 11%;
+  --primary: 152 45% 18%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 36 22% 92%;
+  --secondary-foreground: 20 14% 11%;
+  --muted: 36 22% 92%;
+  --muted-foreground: 20 8% 40%;
+  --accent: 152 38% 91%;
+  --accent-foreground: 152 45% 16%;
+  --destructive: 0 65% 42%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 30 15% 87%;
+  --input: 30 15% 87%;
+  --ring: 152 45% 18%;
+  --radius: 0.625rem;
+
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.site-theme h1,
+.site-theme h2,
+.site-theme h3 {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}

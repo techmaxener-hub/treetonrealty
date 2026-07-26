@@ -23,6 +23,7 @@ export type BrokerSocialLinks = {
 export type BrokerBranding = {
   logo_url?: string;
   favicon_url?: string;
+  hero_image_url?: string;
   primary_color?: string;
   secondary_color?: string;
   font?: string;

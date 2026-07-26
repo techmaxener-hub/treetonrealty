@@ -44,6 +44,7 @@ export function SetupWizard({ initialProfile }: { initialProfile: Tables<"broker
   const [yearsInBusiness, setYearsInBusiness] = useState(String(initialProfile?.years_in_business ?? ""));
 
   const [logoUrl, setLogoUrl] = useState(branding.logo_url ?? "");
+  const [heroImageUrl, setHeroImageUrl] = useState(branding.hero_image_url ?? "");
   const [primaryColor, setPrimaryColor] = useState(branding.primary_color ?? "");
   const [secondaryColor, setSecondaryColor] = useState(branding.secondary_color ?? "");
 
@@ -83,7 +84,12 @@ export function SetupWizard({ initialProfile }: { initialProfile: Tables<"broker
     const { error } = await supabase.from("broker_profile").upsert({
       id: true,
       display_name: displayName,
-      branding: { logo_url: logoUrl || undefined, primary_color: primaryColor || undefined, secondary_color: secondaryColor || undefined },
+      branding: {
+        logo_url: logoUrl || undefined,
+        hero_image_url: heroImageUrl || undefined,
+        primary_color: primaryColor || undefined,
+        secondary_color: secondaryColor || undefined,
+      },
     });
     setSaving(false);
     if (error) {
@@ -217,6 +223,16 @@ export function SetupWizard({ initialProfile }: { initialProfile: Tables<"broker
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="logo_url">Logo URL</Label>
               <Input id="logo_url" placeholder="https://…" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="hero_image_url">Homepage banner image URL (optional)</Label>
+              <Input
+                id="hero_image_url"
+                placeholder="https://…"
+                value={heroImageUrl}
+                onChange={(e) => setHeroImageUrl(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">A wide photo for your homepage&apos;s top banner — a property, your office, or your team.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">

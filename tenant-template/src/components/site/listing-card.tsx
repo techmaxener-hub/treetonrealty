@@ -16,14 +16,14 @@ export function ListingCard({ listing, showCompare = true }: { listing: PublicLi
   const isComparing = ids.includes(listing.id);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link href={`/listings/${listing.slug}`} className="relative aspect-[4/3] bg-secondary">
         {listing.coverUrl ? (
           <Image
             src={listing.coverUrl}
             alt={title}
             fill
-            className="object-cover transition-transform group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             loading="lazy"
           />
@@ -32,14 +32,16 @@ export function ListingCard({ listing, showCompare = true }: { listing: PublicLi
             <ImageOff className="h-8 w-8" />
           </div>
         )}
-        <Badge className="absolute left-2 top-2 text-[10px]">{SEGMENT_LABELS[listing.segment]}</Badge>
+        <Badge className="absolute left-2 top-2 rounded-sm bg-background/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground shadow-sm backdrop-blur">
+          {SEGMENT_LABELS[listing.segment]}
+        </Badge>
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
+      <div className="flex flex-1 flex-col gap-1.5 p-4">
         <Link href={`/listings/${listing.slug}`} className="line-clamp-1 text-sm font-medium hover:underline">
           {title || listing.slug}
         </Link>
-        <p className="text-base font-semibold">{formatCurrencyINR(listing.price)}</p>
+        <p className="font-display text-lg">{formatCurrencyINR(listing.price)}</p>
         <p className="text-xs text-muted-foreground">
           {listing.localityName ?? ""} {listing.localityName ? "·" : ""} {PROPERTY_TYPE_LABELS[listing.property_type]}
           {listing.bhk ? ` · ${listing.bhk} BHK` : ""}
