@@ -68,7 +68,7 @@ export default async function HomePage() {
         ) : (
           <AhmedabadSkyline />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
 
         <div className="relative px-4 py-20 text-center sm:py-28">
           <h1 className="mx-auto max-w-2xl text-4xl font-light leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
