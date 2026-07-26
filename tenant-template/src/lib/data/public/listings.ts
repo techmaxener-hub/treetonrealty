@@ -25,6 +25,7 @@ export type ListingFilters = {
   bhk?: number;
   priceMin?: number;
   priceMax?: number;
+  search?: string;
 };
 
 // Every query here filters is_published explicitly, on top of what RLS
@@ -43,6 +44,7 @@ export async function getPublishedListings(supabase: TypedSupabaseClient, filter
   if (filters.bhk) query = query.eq("bhk", filters.bhk);
   if (filters.priceMin) query = query.gte("price", filters.priceMin);
   if (filters.priceMax) query = query.lte("price", filters.priceMax);
+  if (filters.search) query = query.filter("title->>en", "ilike", `%${filters.search}%`);
 
   const { data: listings, error } = await query;
   if (error) throw error;

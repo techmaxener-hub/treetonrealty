@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ImageOff, Home, BedDouble, Ruler, Phone, Mail } from "lucide-react";
+import { ImageOff, Home, BedDouble, Bath, Ruler, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
 import { useLocalizedText } from "@/lib/hooks/use-language";
@@ -70,6 +70,11 @@ export function ListingRow({ listing, brokerContact, brokerName }: { listing: Pu
           {listing.bhk ? (
             <span className="flex items-center gap-1">
               <BedDouble className="h-3.5 w-3.5" /> {listing.bhk} BHK
+            </span>
+          ) : null}
+          {listing.bathrooms ? (
+            <span className="flex items-center gap-1">
+              <Bath className="h-3.5 w-3.5" /> {listing.bathrooms}
             </span>
           ) : null}
           {listing.carpet_area_sqft ? (

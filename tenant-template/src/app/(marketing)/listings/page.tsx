@@ -27,6 +27,7 @@ export default async function ListingsPage({
       bhk: params.bhk ? Number(params.bhk) : undefined,
       priceMin: params.priceMin ? Number(params.priceMin) : undefined,
       priceMax: params.priceMax ? Number(params.priceMax) : undefined,
+      search: params.q || undefined,
     }),
     getLocalitiesLiteForFilter(supabase),
     getBrokerProfile(supabase),

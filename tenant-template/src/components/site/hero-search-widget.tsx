@@ -19,6 +19,7 @@ const ALL = "__all__";
 export function HeroSearchWidget({ localities }: { localities: LocalityLite[] }) {
   const router = useRouter();
   const [offer, setOffer] = useState<ListingOfferType>("sale");
+  const [search, setSearch] = useState("");
   const [locality, setLocality] = useState(ALL);
   const [propertyType, setPropertyType] = useState(ALL);
   const [bhk, setBhk] = useState(ALL);
@@ -28,6 +29,7 @@ export function HeroSearchWidget({ localities }: { localities: LocalityLite[] })
   function handleSearch() {
     const params = new URLSearchParams();
     params.set("offer", offer);
+    if (search.trim()) params.set("q", search.trim());
     if (locality !== ALL) params.set("locality", locality);
     if (propertyType !== ALL) params.set("type", propertyType);
     if (bhk !== ALL) params.set("bhk", bhk);
@@ -55,6 +57,19 @@ export function HeroSearchWidget({ localities }: { localities: LocalityLite[] })
       </div>
 
       <div className="flex flex-col gap-2 rounded-b-md rounded-tr-md bg-card p-3 shadow-xl sm:flex-row sm:items-center">
+        <Input
+          type="search"
+          placeholder="Search by project or listing name"
+          className="border-0 shadow-none sm:min-w-40 sm:flex-1"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+        />
+
+        <div className="hidden h-6 w-px bg-border sm:block" />
+
         <Select value={locality} onValueChange={setLocality}>
           <SelectTrigger className="border-0 shadow-none sm:w-48">
             <SelectValue placeholder="Locality" />

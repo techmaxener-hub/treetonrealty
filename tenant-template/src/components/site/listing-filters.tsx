@@ -27,6 +27,17 @@ export function ListingFilters({ localities }: { localities: LocalityLite[] }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      <Input
+        type="search"
+        placeholder="Search by project or listing name"
+        className="w-full sm:w-56"
+        defaultValue={searchParams.get("q") ?? ""}
+        onBlur={(e) => updateParam("q", e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") updateParam("q", e.currentTarget.value);
+        }}
+      />
+
       <div className="flex rounded-full border border-border p-0.5">
         {(["__all__", "sale", "rent"] as (ListingOfferType | typeof ALL)[]).map((v) => (
           <button

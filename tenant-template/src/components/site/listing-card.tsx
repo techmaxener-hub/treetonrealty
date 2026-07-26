@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ImageOff, Scale, BedDouble, Ruler, Home } from "lucide-react";
+import { ImageOff, Scale, BedDouble, Bath, Ruler, Home } from "lucide-react";
 import type { PublicListingCard } from "@/lib/data/public/listings";
 import { useLocalizedText } from "@/lib/hooks/use-language";
 import { useCompareList } from "@/lib/hooks/use-compare-list";
@@ -72,6 +72,11 @@ export function ListingCard({
           {listing.bhk ? (
             <span className="flex items-center gap-1">
               <BedDouble className="h-3.5 w-3.5" /> {listing.bhk} BHK
+            </span>
+          ) : null}
+          {listing.bathrooms ? (
+            <span className="flex items-center gap-1">
+              <Bath className="h-3.5 w-3.5" /> {listing.bathrooms}
             </span>
           ) : null}
           {listing.carpet_area_sqft ? (

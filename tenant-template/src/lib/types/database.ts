@@ -155,6 +155,7 @@ export interface Database {
           price: number | null;
           maintenance_charges: number | null;
           bhk: number | null;
+          bathrooms: number | null;
           carpet_area_sqft: number | null;
           builtup_area_sqft: number | null;
           floor_number: number | null;

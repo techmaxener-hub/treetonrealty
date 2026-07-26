@@ -213,6 +213,15 @@ export function ListingOverviewForm({
           <Input type="number" step="0.5" value={form.bhk ?? ""} onChange={(e) => set("bhk", e.target.value ? Number(e.target.value) : null)} />
         </div>
         <div className="flex flex-col gap-1.5">
+          <Label>Bathrooms</Label>
+          <Input
+            type="number"
+            step="1"
+            value={form.bathrooms ?? ""}
+            onChange={(e) => set("bathrooms", e.target.value ? Number(e.target.value) : null)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
           <Label>Developer</Label>
           <Input value={form.developer_name ?? ""} onChange={(e) => set("developer_name", e.target.value || null)} />
         </div>

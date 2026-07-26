@@ -662,3 +662,64 @@ public-facing components (`HeroSearchWidget`, `FeaturedListingsCarousel`,
 environment (no reachable Supabase project here) — verified structurally
 and via a static HTML preview built from the same tokens instead;
 real-browser confirmation is on the user once deployed.
+
+## Public site, third pass — Ahmedabad flavour + reference-parity gaps
+
+Follow-up to the portal redirect above, after a fresh gap analysis
+against the reference video. This sandbox has no route to any
+general-purpose web host (package registries and Google Fonts are
+allowlisted, arbitrary hosts like Wikimedia/Wikipedia are not), so any
+"real photo" request here is answered with honest illustration or
+data-driven UI instead of a faked/scraped image — never silently.
+
+**Hero background: illustrated Ahmedabad skyline, not a stock photo.**
+New `AhmedabadSkyline` component (`src/components/site/ahmedabad-skyline.tsx`)
+— an inline SVG replacing the flat `bg-foreground` fallback on the
+homepage hero when a broker hasn't set `branding.hero_image_url`. Draws
+the Sabarmati riverfront, the Atal (sail) footbridge, an SG
+Highway-style high-rise line, and a few Uttarayan kites, in the same
+navy palette as the rest of `.site-theme` — deliberately legible as
+art, not a photo standing in for one. A broker-supplied
+`hero_image_url` still wins outright; this is only the placeholder path.
+
+**Homepage "trusted partner" section.** The reference's about/trust
+block was missing entirely; added between the quick-links strip and
+the featured-listings carousel. Reuses the same badge data the `/about`
+page already assembles (`years_in_business`, Google rating,
+`supported_languages` count, magicpin verification) as a 2×2 stat
+panel next to a headline/body/About+Contact CTA pair — a stat panel
+instead of the reference's photo collage, since no real broker/office
+photography exists to place there honestly.
+
+**Bathroom count.** `listings` had `bhk` but no bathroom count, so the
+reference's "beds · baths · sqft" icon row was only ever two-thirds
+built. Migration `0014` adds `listings.bathrooms` (nullable numeric,
+additive). Wired into `ListingOverviewForm` (CRM edit, next to BHK),
+and into both public icon rows (`ListingCard`, `ListingRow`) via a
+`Bath` icon, rendered only when set.
+
+**Free-text listing search.** Neither the hero widget nor the
+`/listings` filter bar could search by project/listing name — the
+reference's primary search affordance. `ListingFilters.search` (new)
+filters on `title->>en ilike %q%`, the same jsonb-path `ilike` pattern
+already used by `searchListings` in `deals.ts`. Wired as a `q` query
+param through `HeroSearchWidget` (new leading field, `flex-1`,
+Enter-to-search), the `/listings` filter bar (same field, blur- and
+Enter-triggered), and `getPublishedListings`.
+
+**Still open, not actioned this pass** (carried over from the last gap
+analysis, unchanged): Instagram feed embed with a broker on/off toggle,
+site-wide `LocalBusiness` schema.org markup (only per-listing
+`RealEstateListing` exists today), CRM lead auto-assignment rules
+(round robin/locality-based), a sort dropdown and map-view toggle on
+`/listings`, and the reference's calculators/self-serve
+list-your-property flow (still judged Dubai-market conventions outside
+the brief, not silently built).
+
+**Validated:** migration `0014` applied cleanly against the full
+14-migration chain on a fresh local Postgres 16 cluster (run as an
+unprivileged user via a throwaway `useradd`, since `initdb`/`pg_ctl`
+refuse root — cluster and user torn down after). All four changes pass
+`typecheck`, `lint`, and `build` together. No live-browser check was
+possible from this environment for the same network-policy reason as
+the previous pass.
