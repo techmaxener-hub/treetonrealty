@@ -90,17 +90,19 @@ export default async function HomePage() {
               <span className="text-white/60">({reviewSummary.google_review_count} Google reviews)</span>
             </div>
           ) : null}
-        </div>
-      </section>
 
-      <section className="border-b border-border">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px bg-border sm:grid-cols-4">
-          {QUICK_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className="flex flex-col items-center gap-2 bg-background px-4 py-6 text-center transition-colors hover:bg-secondary">
-              <link.icon className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm font-medium">{link.label}</span>
-            </Link>
-          ))}
+          <div className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-2 sm:grid-cols-4">
+            {QUICK_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex flex-col items-center gap-2 rounded-md bg-white/10 px-4 py-5 text-center text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+              >
+                <link.icon className="h-5 w-5" />
+                <span className="text-xs font-medium">{link.label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

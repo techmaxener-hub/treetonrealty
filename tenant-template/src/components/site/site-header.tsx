@@ -3,15 +3,24 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Plus, Facebook, Youtube, Instagram, Linkedin, MessageCircle } from "lucide-react";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 import type { Tables } from "@/lib/types/database";
-import type { BrokerBranding } from "@/lib/types/broker-content";
+import type { BrokerBranding, BrokerContact, BrokerSocialLinks } from "@/lib/types/broker-content";
+import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/listings", label: "Listings" },
-  { href: "/localities", label: "Localities" },
+const NAV_LINKS = [{ href: "/", label: "Home" }];
+
+const NAV_GROUP = {
+  label: "Find a property",
+  children: [
+    { href: "/listings", label: "Listings" },
+    { href: "/localities", label: "Localities" },
+    { href: "/compare", label: "Compare properties" },
+  ],
+};
+
+const NAV_LINKS_AFTER = [
   { href: "/team", label: "Team" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -23,8 +32,18 @@ const NAV_LINKS = [
 // permanent inline nav row competing with it.
 export function SiteHeader({ broker }: { broker: Tables<"broker_profile"> | null }) {
   const branding = (broker?.branding ?? {}) as BrokerBranding;
+  const contact = (broker?.contact ?? {}) as BrokerContact;
+  const social = (broker?.social_links ?? {}) as BrokerSocialLinks;
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [groupOpen, setGroupOpen] = useState(false);
+
+  const socialIcons = [
+    social.facebook ? { href: social.facebook, icon: Facebook, label: "Facebook" } : null,
+    social.youtube ? { href: social.youtube, icon: Youtube, label: "YouTube" } : null,
+    social.instagram ? { href: social.instagram, icon: Instagram, label: "Instagram" } : null,
+    social.linkedin ? { href: social.linkedin, icon: Linkedin, label: "LinkedIn" } : null,
+  ].filter((s): s is { href: string; icon: typeof Facebook; label: string } => s !== null);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -91,7 +110,7 @@ export function SiteHeader({ broker }: { broker: Tables<"broker_profile"> | null
               <X className="h-5 w-5" />
             </button>
           </div>
-          <nav className="mt-8 flex flex-1 flex-col">
+          <nav className="mt-8 flex flex-1 flex-col overflow-y-auto">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -101,10 +120,69 @@ export function SiteHeader({ broker }: { broker: Tables<"broker_profile"> | null
                 {link.label}
               </Link>
             ))}
+
+            <div className="border-b border-background/15">
+              <button
+                type="button"
+                onClick={() => setGroupOpen((v) => !v)}
+                aria-expanded={groupOpen}
+                className="flex w-full items-center justify-between py-4 text-2xl font-light transition-opacity hover:opacity-70"
+              >
+                {NAV_GROUP.label}
+                <Plus className={cn("h-5 w-5 shrink-0 transition-transform", groupOpen && "rotate-45")} />
+              </button>
+              {groupOpen && (
+                <div className="flex flex-col pb-3 pl-4">
+                  {NAV_GROUP.children.map((child) => (
+                    <Link key={child.href} href={child.href} className="py-2 text-base text-background/75 transition-opacity hover:opacity-70">
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {NAV_LINKS_AFTER.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="border-b border-background/15 py-4 text-2xl font-light transition-opacity hover:opacity-70"
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
-          <Link href="/login" className="pb-4 text-sm text-background/60 hover:text-background">
-            Broker Login
-          </Link>
+
+          <div className="flex items-center justify-between pt-4">
+            <Link href="/login" className="text-sm text-background/60 hover:text-background">
+              Broker Login
+            </Link>
+            <div className="flex items-center gap-3">
+              {socialIcons.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="text-background/60 transition-colors hover:text-background"
+                >
+                  <s.icon className="h-4 w-4" />
+                </a>
+              ))}
+              {contact.whatsapp_number && (
+                <a
+                  href={`https://wa.me/${contact.whatsapp_number.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="WhatsApp"
+                  className="text-background/60 transition-colors hover:text-background"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>

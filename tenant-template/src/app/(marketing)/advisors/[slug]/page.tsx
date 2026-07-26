@@ -7,6 +7,7 @@ import { getBrokerProfile } from "@/lib/data/public/broker-profile";
 import { ListingCard } from "@/components/site/listing-card";
 import { LocalizedDisplay } from "@/components/site/localized-display";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import type { BrokerContact } from "@/lib/types/broker-content";
 import type { Metadata } from "next";
@@ -31,6 +32,7 @@ export default async function AdvisorDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <Breadcrumbs items={[{ label: "Team", href: "/team" }, { label: advisor.display_name }]} />
       <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
         <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full bg-secondary">
           {advisor.photo_url ? (

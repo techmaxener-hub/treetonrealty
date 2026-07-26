@@ -5,6 +5,7 @@ import { getLocalitiesLiteForFilter } from "@/lib/data/public/localities";
 import { getBrokerProfile } from "@/lib/data/public/broker-profile";
 import { ListingFilters } from "@/components/site/listing-filters";
 import { ListingRow } from "@/components/site/listing-row";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import type { PropertyTypeEnum, ListingSegment, ListingOfferType } from "@/lib/types/database";
 import type { BrokerContact } from "@/lib/types/broker-content";
 
@@ -37,6 +38,7 @@ export default async function ListingsPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      <Breadcrumbs items={[{ label: "Listings" }]} />
       <h1 className="mb-1 text-2xl font-light">Listings</h1>
       <p className="mb-5 text-sm text-muted-foreground">
         {listings.length} {listings.length === 1 ? "property" : "properties"}

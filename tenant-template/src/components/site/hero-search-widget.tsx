@@ -39,16 +39,16 @@ export function HeroSearchWidget({ localities }: { localities: LocalityLite[] })
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="flex gap-1">
+    <div className="mx-auto max-w-4xl overflow-hidden rounded-md bg-card shadow-xl">
+      <div className="flex gap-6 border-b border-border px-4 pt-3">
         {(["sale", "rent"] as ListingOfferType[]).map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => setOffer(v)}
             className={cn(
-              "rounded-t-md px-5 py-2.5 text-sm font-medium transition-colors",
-              offer === v ? "bg-card text-foreground" : "bg-foreground/10 text-background hover:bg-foreground/20",
+              "-mb-px border-b-2 pb-3 text-sm font-medium transition-colors",
+              offer === v ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
             {v === "sale" ? "Buy" : "Rent"}
@@ -56,7 +56,7 @@ export function HeroSearchWidget({ localities }: { localities: LocalityLite[] })
         ))}
       </div>
 
-      <div className="flex flex-col gap-2 rounded-b-md rounded-tr-md bg-card p-3 shadow-xl sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
         <Input
           type="search"
           placeholder="Search by project or listing name"

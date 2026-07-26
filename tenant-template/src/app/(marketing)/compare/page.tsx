@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getListingsByIds } from "@/lib/data/public/listings";
 import { LocalizedDisplay } from "@/components/site/localized-display";
 import { YoutubeEmbed } from "@/components/site/youtube-embed";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { PROPERTY_TYPE_LABELS, SEGMENT_LABELS } from "@/lib/constants";
 import { formatCurrencyINR } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <Breadcrumbs items={[{ label: "Compare" }]} />
       <h1 className="mb-6 text-2xl font-semibold">Compare</h1>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px] border-collapse text-sm">

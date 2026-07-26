@@ -4,6 +4,7 @@ import { getBrokerProfile } from "@/lib/data/public/broker-profile";
 import { ContactForm } from "@/components/site/contact-form";
 import { SavedSearchForm } from "@/components/site/saved-search-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import type { BrokerContact } from "@/lib/types/broker-content";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ export default async function ContactPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      <Breadcrumbs items={[{ label: "Contact" }]} />
       <h1 className="mb-6 text-2xl font-semibold">Get in touch</h1>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

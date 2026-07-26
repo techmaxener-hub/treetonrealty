@@ -3,6 +3,7 @@ import Image from "next/image";
 import { MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getPublishedLocalities } from "@/lib/data/public/localities";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ export default async function LocalitiesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <Breadcrumbs items={[{ label: "Localities" }]} />
       <h1 className="mb-2 text-2xl font-semibold">Localities we cover</h1>
       <p className="mb-6 text-muted-foreground">Micro-market guides — connectivity, price trends, and what to expect.</p>
 

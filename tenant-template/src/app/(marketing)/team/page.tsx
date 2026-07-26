@@ -3,6 +3,7 @@ import Image from "next/image";
 import { User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicAdvisors } from "@/lib/data/public/advisors";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ export default async function TeamPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <Breadcrumbs items={[{ label: "Team" }]} />
       <h1 className="mb-2 text-2xl font-semibold">Our team</h1>
       <p className="mb-6 text-muted-foreground">Personalized guidance from people who know the market.</p>
 

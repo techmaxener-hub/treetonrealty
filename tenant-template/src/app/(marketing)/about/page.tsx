@@ -4,6 +4,7 @@ import { getBrokerProfile, getReviewSummary } from "@/lib/data/public/broker-pro
 import { getPublishedTestimonials } from "@/lib/data/public/testimonials";
 import { TestimonialsStrip } from "@/components/site/testimonials-strip";
 import { Card, CardContent } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import type { BrokerSocialLinks } from "@/lib/types/broker-content";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export default async function AboutPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <Breadcrumbs items={[{ label: "About" }]} />
       <h1 className="mb-2 text-2xl font-semibold">Why {broker?.display_name ?? "us"}</h1>
       <p className="mb-8 text-muted-foreground">
         {(broker?.seo as { meta_description?: string } | undefined)?.meta_description ??

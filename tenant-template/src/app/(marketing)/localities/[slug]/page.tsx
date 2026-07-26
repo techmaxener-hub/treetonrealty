@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getLocalityBySlug } from "@/lib/data/public/localities";
 import { ListingCard } from "@/components/site/listing-card";
 import { LocalityContent } from "@/components/site/locality-content";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,7 @@ export default async function LocalityDetailPage({ params }: { params: Promise<{
       )}
 
       <div className="mx-auto max-w-4xl px-4 py-8">
+        <Breadcrumbs items={[{ label: "Localities", href: "/localities" }, { label: locality.name }]} />
         <h1 className="mb-1 text-2xl font-semibold">{locality.name}</h1>
         {locality.city && <p className="mb-6 text-muted-foreground">{[locality.city, locality.state].filter(Boolean).join(", ")}</p>}
 

@@ -723,3 +723,78 @@ refuse root — cluster and user torn down after). All four changes pass
 `typecheck`, `lint`, and `build` together. No live-browser check was
 possible from this environment for the same network-policy reason as
 the previous pass.
+
+## Public site, fourth pass — closing the real-reference gap (minus photography)
+
+The user pointed at the actual live reference site (arabianestates.ae,
+not just the earlier video frames) and compared it directly against
+the deployed build. Fetching that URL from this sandbox failed the
+same way every external host has all session (`WebFetch` got a `403`,
+direct `curl` got a `CONNECT` policy denial) — the user supplied
+screenshots instead, which is what made a precise gap list possible.
+
+The honest split: every section of the reference runs on a real,
+warm-toned architectural photograph, and that warmth *is* most of the
+design. This sandbox cannot fetch photography from anywhere — Unsplash,
+Pexels, Pixabay, and Wikimedia were all tested this session and every
+one comes back `403` at the proxy level (confirmed via
+`$HTTPS_PROXY/__agentproxy/status`, which logs the rejected CONNECTs).
+That gap only closes with real photos the broker supplies through
+`branding.hero_image_url` or similar fields — no amount of illustration
+work substitutes for it, and this pass does not pretend otherwise.
+What follows are the gaps that were actually closeable without photos:
+
+**Serif display type for headings.** The reference's hero/section
+headlines use a light, elegant serif; Fraunces (dropped in the second
+design pass in favor of all-Inter) is reintroduced, but scoped
+narrowly this time — `layout.tsx` loads it as `--font-display`
+(weights 300/400 only), and `globals.css` applies it only to
+`.site-theme h1`/`h2`. Body copy and `h3` stay on Inter; this isn't a
+full font-stack reversal, just closing a real typographic gap on the
+elements that actually carry it in the reference.
+
+**Hero overlay quick-action tiles.** The reference's row of
+translucent dark tiles (calculators, list-a-property, etc.) sits
+directly on the hero photo, not in a separate section below it. The
+homepage's `QUICK_LINKS` row moved inside the hero `<section>` itself
+— `bg-white/10 backdrop-blur-sm` tiles straddling the boundary between
+the photo/illustration and the page body below, using the same four
+existing destinations (listings, team, compare, localities) rather
+than inventing links to calculator/self-serve pages that don't exist
+in this brief.
+
+**Hero search widget restyle.** Buy/Rent switched from filled pill
+buttons to underline-active tabs on a white bar (`border-b-2`,
+transparent otherwise) matching the reference's tab treatment; the
+`/listings` page's own compact filter-bar pill toggle was left as-is
+since the reference never shows an equivalent secondary filter bar to
+compare against.
+
+**Slide-out menu: expandable group + social/WhatsApp row.** The menu
+gained one expandable section — "Find a property" (Listings,
+Localities, Compare properties) — toggled by a rotating `Plus` icon,
+matching the reference's `+`-caret pattern. Kept to one real group
+rather than fabricating hollow categories for pages that don't exist
+(off-plan, calculators, referral program, knowledge hub — all outside
+this brief). `social_links` (facebook/youtube/instagram/linkedin) and
+`contact.whatsapp_number` now render as an icon row anchored at the
+bottom of the panel, next to the existing Broker Login link — reusing
+data the schema already had, not adding new fields.
+
+**Breadcrumbs.** New `Breadcrumbs` component (`components/site/
+breadcrumbs.tsx`) — `Home / Section / Entity`, last segment unlinked —
+added to every interior page: listings index and detail, about,
+contact, localities index and detail, team, advisor detail, and
+compare. Detail pages use the real entity name/title as the trailing
+segment.
+
+**Validated differently this time.** Rather than reasoning about CSS
+changes from the diff alone, the two highest-risk pieces (hero + tile
+overlay + search widget; the slide-out menu with its group expanded)
+were rendered standalone via Playwright/Chromium (pre-installed in
+this environment) against the actual Tailwind output copied out of
+`.next/static/css` after a real `next build` — real compiled classes,
+not guessed ones — and screenshotted before pushing. All changes pass
+`typecheck`, `lint`, and `build`. Still no live-browser confirmation
+against the deployed site itself; that remains on the user, same
+network-policy reason as every prior pass.

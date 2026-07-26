@@ -10,6 +10,7 @@ import { EmiCalculator } from "@/components/site/emi-calculator";
 import { ListingCard } from "@/components/site/listing-card";
 import { LocalizedDisplay } from "@/components/site/localized-display";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PROPERTY_TYPE_LABELS, SEGMENT_LABELS, POSSESSION_STATUS_LABELS } from "@/lib/constants";
@@ -59,6 +60,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     <div className="mx-auto max-w-6xl px-4 py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ListingViewTracker listingId={listing.id} />
+      <Breadcrumbs items={[{ label: "Listings", href: "/listings" }, { label: title }]} />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
