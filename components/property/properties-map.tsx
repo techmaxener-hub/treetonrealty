@@ -3,54 +3,60 @@
 import "leaflet/dist/leaflet.css";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
-import { formatIndianPrice, type Property } from "@/lib/mock-data";
+import { ListingImage } from "@/components/property/listing-image";
+import { formatINR } from "@/lib/currency";
+import type { ListingCard } from "@/lib/queries/listings";
 
-const AHMEDABAD_CENTER: [number, number] = [23.06, 72.56];
+const AHMEDABAD_CENTER: [number, number] = [23.03, 72.51];
 
-function compactPrice(priceInCr: number) {
-  if (priceInCr >= 1) return `₹${priceInCr.toFixed(2).replace(/\.?0+$/, "")}Cr`;
-  return `₹${Math.round(priceInCr * 100)}L`;
-}
-
-function createPriceIcon(priceInCr: number, active: boolean) {
+function createPriceIcon(priceInr: number, active: boolean) {
   return L.divIcon({
     className: "",
     html: `<div class="whitespace-nowrap rounded-full border-2 ${
-      active ? "border-charcoal bg-charcoal text-ivory" : "border-white bg-champagne-gradient text-charcoal"
-    } px-3 py-1 text-xs font-bold shadow-gold transition-transform">${compactPrice(priceInCr)}</div>`,
+      active ? "border-slate-deep bg-slate-deep text-alabaster" : "border-white bg-gold-gradient text-slate-deep"
+    } px-3 py-1 text-xs font-bold shadow-gold transition-transform">${formatINR(priceInr)}</div>`,
     iconSize: [1, 1],
     iconAnchor: [0, 14],
     popupAnchor: [40, -8],
   });
 }
 
-function FitBounds({ properties }: { properties: Property[] }) {
+function FitBounds({ listings }: { listings: ListingCard[] }) {
   const map = useMap();
+  const geoListings = React.useMemo(
+    () => listings.filter((l): l is ListingCard & { latitude: number; longitude: number } =>
+      l.latitude !== null && l.longitude !== null
+    ),
+    [listings]
+  );
 
   React.useEffect(() => {
-    if (properties.length === 0) return;
-    if (properties.length === 1) {
-      map.setView([properties[0].lat, properties[0].lng], 14);
+    if (geoListings.length === 0) return;
+    if (geoListings.length === 1) {
+      map.setView([geoListings[0].latitude, geoListings[0].longitude], 14);
       return;
     }
-    const bounds = L.latLngBounds(properties.map((p) => [p.lat, p.lng] as [number, number]));
+    const bounds = L.latLngBounds(geoListings.map((l) => [l.latitude, l.longitude] as [number, number]));
     map.fitBounds(bounds, { padding: [48, 48] });
-  }, [properties, map]);
+  }, [geoListings, map]);
 
   return null;
 }
 
 interface PropertiesMapProps {
-  properties: Property[];
+  listings: ListingCard[];
   hoveredSlug?: string | null;
 }
 
-export default function PropertiesMap({ properties, hoveredSlug }: PropertiesMapProps) {
+export default function PropertiesMap({ listings, hoveredSlug }: PropertiesMapProps) {
+  const geoListings = listings.filter(
+    (l): l is ListingCard & { latitude: number; longitude: number } => l.latitude !== null && l.longitude !== null
+  );
+
   return (
     <MapContainer
       center={AHMEDABAD_CENTER}
@@ -63,24 +69,28 @@ export default function PropertiesMap({ properties, hoveredSlug }: PropertiesMap
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FitBounds properties={properties} />
-      {properties.map((property) => (
+      <FitBounds listings={listings} />
+      {geoListings.map((listing) => (
         <Marker
-          key={property.id}
-          position={[property.lat, property.lng]}
-          icon={createPriceIcon(property.priceInCr, hoveredSlug === property.slug)}
+          key={listing.id}
+          position={[listing.latitude, listing.longitude]}
+          icon={createPriceIcon(listing.priceInr, hoveredSlug === listing.slug)}
         >
           <Popup>
-            <Link href={`/properties/${property.slug}`} className="flex w-56 gap-3">
+            <Link href={`/properties/${listing.slug}`} className="flex w-56 gap-3">
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
-                <Image src={property.heroImage} alt={property.title} fill className="object-cover" />
+                <ListingImage
+                  src={listing.primaryImageUrl ?? ""}
+                  alt={listing.primaryImageAlt}
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-charcoal">{property.title}</p>
-                <p className="text-xs text-muted-foreground">{property.locality}</p>
-                <p className="mt-1 text-sm font-bold text-champagne-dark">
-                  {formatIndianPrice(property.priceInCr)}
-                </p>
+                <p className="truncate text-sm font-semibold text-slate-deep">{listing.title}</p>
+                <p className="text-xs text-muted-foreground">{listing.locality}</p>
+                <p className="mt-1 text-sm font-bold text-gold-600">{formatINR(listing.priceInr)}</p>
               </div>
             </Link>
           </Popup>

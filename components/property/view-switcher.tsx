@@ -20,7 +20,7 @@ export function ViewSwitcher({
   onChange: (mode: ViewMode) => void;
 }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full bg-charcoal/5 p-1">
+    <div className="inline-flex items-center gap-1 rounded-full bg-slate-deep/5 p-1">
       {OPTIONS.map((option) => (
         <button
           key={option.value}
@@ -28,8 +28,8 @@ export function ViewSwitcher({
           className={cn(
             "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300 ease-luxury",
             value === option.value
-              ? "bg-champagne-gradient text-charcoal shadow-gold"
-              : "text-charcoal/60 hover:text-charcoal"
+              ? "bg-gold-gradient text-slate-deep shadow-gold"
+              : "text-slate-deep/60 hover:text-slate-deep"
           )}
         >
           <option.icon className="h-4 w-4" />

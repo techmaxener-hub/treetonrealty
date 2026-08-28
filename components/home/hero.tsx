@@ -9,19 +9,19 @@ import { HeroSearch } from "@/components/home/hero-search";
 const SLIDES = [
   {
     src: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=2000&q=80",
-    caption: "Ambli-Sindhu Bhavan Road",
+    caption: "Bodakdev, Ahmedabad",
   },
   {
     src: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=2000&q=80",
-    caption: "GIFT City SEZ",
+    caption: "SG Highway, Ahmedabad",
   },
   {
     src: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=2000&q=80",
-    caption: "Science City Road",
+    caption: "South Bopal, Ahmedabad",
   },
 ];
 
-export function Hero() {
+export function Hero({ localities }: { localities: string[] }) {
   const [index, setIndex] = React.useState(0);
 
   React.useEffect(() => {
@@ -30,7 +30,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative flex min-h-[92vh] items-center overflow-hidden bg-charcoal">
+    <section className="relative flex min-h-[92vh] items-center overflow-hidden bg-slate-deep">
       <AnimatePresence mode="sync">
         <motion.div
           key={SLIDES[index].src}
@@ -50,7 +50,7 @@ export function Hero() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/60 to-charcoal/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-deep via-slate-deep/60 to-slate-deep/30" />
 
       <div className="container relative z-10 flex flex-col items-start gap-8 py-32">
         <motion.div
@@ -58,15 +58,14 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="font-serif text-lg italic text-champagne">
-            Ahmedabad &middot; Gandhinagar &middot; GIFT City
-          </p>
-          <h1 className="mt-3 max-w-2xl text-balance font-display text-5xl font-bold leading-[1.05] text-ivory md:text-7xl">
-            Live Above the <span className="text-gradient-gold">Ordinary</span>
+          <p className="font-serif text-lg italic text-gold-600">Bodakdev / Ambli-Bopal, Ahmedabad</p>
+          <h1 className="mt-3 max-w-2xl text-balance font-display text-5xl font-bold leading-[1.05] text-alabaster md:text-7xl">
+            Your Trusted <span className="text-gradient-gold">Real Estate Partner</span>
           </h1>
-          <p className="mt-5 max-w-xl text-balance text-ivory/70">
-            Curated Sky Villas, Penthouses &amp; GIFT City SEZ residences across Gujarat&rsquo;s
-            most coveted corridors — every listing GUJRERA-verified.
+          <p className="mt-5 max-w-xl text-balance text-alabaster/70">
+            Residential &amp; commercial properties across Western Ahmedabad&rsquo;s SG Highway,
+            Bodakdev, Bopal, Ambli, Thaltej, Satellite, South Bopal, Prahladnagar, and Vastrapur
+            corridor.
           </p>
         </motion.div>
 
@@ -76,7 +75,7 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="w-full"
         >
-          <HeroSearch />
+          <HeroSearch localities={localities} />
         </motion.div>
       </div>
 
@@ -87,7 +86,7 @@ export function Hero() {
             onClick={() => setIndex(i)}
             aria-label={`Show ${slide.caption}`}
             className={`h-1.5 rounded-full transition-all ${
-              i === index ? "w-8 bg-champagne" : "w-4 bg-ivory/30"
+              i === index ? "w-8 bg-gold-600" : "w-4 bg-alabaster/30"
             }`}
           />
         ))}

@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import colors from "tailwindcss/colors";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -55,22 +57,25 @@ const config: Config = {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
-        // Luxury brand palette — reference these directly when semantic
-        // tokens above (primary/accent/etc.) aren't specific enough.
-        champagne: {
-          DEFAULT: "#D4AF37",
-          light: "#E4C766",
-          dark: "#C5A059",
+        // Brand palette per project spec -- reference these directly when
+        // semantic tokens above (primary/accent/etc.) aren't specific enough.
+        // "emerald" is intentionally NOT redefined here: Tailwind's own
+        // emerald-* scale already has emerald-600 = #059669, the spec's exact
+        // value, and is already used natively elsewhere (e.g. badge
+        // "verified") -- shadowing it would break those. "gold" is aliased to
+        // Tailwind's amber-* scale for the same reason (amber-600 = #D97706
+        // is the spec's exact gold value) -- use gold-400/500/600/700 etc.
+        "slate-deep": {
+          DEFAULT: "#0F172A",
+          light: "#1E293B",
+          dark: "#020617",
         },
-        charcoal: {
-          DEFAULT: "#1A1F2C",
-          light: "#242B3D",
-          dark: "#12151E",
+        alabaster: {
+          DEFAULT: "#F8FAFC",
+          dark: "#F1F5F9",
         },
-        ivory: {
-          DEFAULT: "#FAF9F6",
-          dark: "#F2EFE9",
-        },
+        gold: colors.amber,
+        "border-subtle": "rgba(23, 23, 23, 0.08)",
       },
       fontFamily: {
         display: ["var(--font-display)", "serif"],
@@ -83,15 +88,19 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       backgroundImage: {
-        "champagne-gradient":
-          "linear-gradient(135deg, #E4C766 0%, #D4AF37 45%, #C5A059 100%)",
-        "charcoal-gradient":
-          "linear-gradient(180deg, #1A1F2C 0%, #12151E 100%)",
+        // Primary CTA (emerald) and secondary/premium accent (gold) gradients.
+        "emerald-gradient":
+          "linear-gradient(135deg, #34D399 0%, #059669 45%, #047857 100%)",
+        "gold-gradient":
+          "linear-gradient(135deg, #FBBF24 0%, #D97706 45%, #B45309 100%)",
+        "slate-gradient":
+          "linear-gradient(180deg, #1E293B 0%, #020617 100%)",
       },
       boxShadow: {
-        elevate: "0 8px 30px -8px rgba(26, 31, 44, 0.25)",
-        "elevate-lg": "0 20px 60px -12px rgba(26, 31, 44, 0.35)",
-        gold: "0 8px 30px -6px rgba(212, 175, 55, 0.35)",
+        elevate: "0 8px 30px -8px rgba(15, 23, 42, 0.25)",
+        "elevate-lg": "0 20px 60px -12px rgba(15, 23, 42, 0.35)",
+        primary: "0 8px 30px -6px rgba(5, 150, 105, 0.35)",
+        gold: "0 8px 30px -6px rgba(217, 119, 6, 0.35)",
       },
       keyframes: {
         "accordion-down": {
@@ -110,18 +119,23 @@ const config: Config = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-up": "fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         shimmer: "shimmer 2.5s linear infinite",
+        marquee: "marquee 30s linear infinite",
       },
       transitionTimingFunction: {
         luxury: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 };
 export default config;

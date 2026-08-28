@@ -1,17 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./database.types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  // Frontend-first build: mock-data.ts drives the UI until these are set.
-  console.warn(
-    "Supabase env vars are not set — falling back to lib/mock-data.ts. " +
-      "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local to go live."
+  throw new Error(
+    "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
+      "Set both in .env.local (see .env.local.example)."
   );
 }
 
-export const supabase = createClient(
-  supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key"
-);
+// Browser/client-side, RLS-scoped (anon key). Never import the service-role client
+// (lib/supabase/server.ts) into a Client Component -- it bypasses RLS entirely.
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

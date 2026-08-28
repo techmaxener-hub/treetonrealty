@@ -10,13 +10,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-charcoal text-ivory hover:bg-charcoal-light shadow-elevate hover:shadow-elevate-lg",
-        gold: "bg-champagne-gradient text-charcoal shadow-gold hover:brightness-105 hover:shadow-elevate-lg",
+          "bg-slate-deep text-alabaster hover:bg-slate-deep-light shadow-elevate hover:shadow-elevate-lg",
+        primary: "bg-emerald-gradient text-white shadow-primary hover:brightness-105 hover:shadow-elevate-lg",
         outline:
-          "border border-champagne/60 text-charcoal bg-transparent hover:bg-champagne/10",
-        ghost: "text-charcoal hover:bg-black/5",
-        link: "text-charcoal underline-offset-4 hover:underline",
-        glass: "glass text-charcoal hover:bg-white/80",
+          "border border-gold-600/60 text-slate-deep bg-transparent hover:bg-gold-600/10",
+        ghost: "text-slate-deep hover:bg-black/5",
+        link: "text-slate-deep underline-offset-4 hover:underline",
+        glass: "glass text-slate-deep hover:bg-white/80",
       },
       size: {
         default: "h-11 px-6 py-2",

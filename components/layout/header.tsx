@@ -3,8 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, Ruler } from "lucide-react";
+import { Menu } from "lucide-react";
 
+import { AreaUnitSwitcher } from "@/components/property/area-unit-switcher";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,20 +14,22 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useUnit } from "@/lib/providers/unit-provider";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { label: "Buy", href: "/properties?intent=buy" },
-  { label: "Rent", href: "/properties?intent=rent" },
-  { label: "Off-Plan Luxury", href: "/off-plan" },
-  { label: "GIFT City Special", href: "/properties?corridor=gift-city-sez" },
+  { label: "Properties", href: "/properties" },
+  { label: "Collections", href: "/collections/luxury-penthouses" },
+  { label: "Calculators", href: "/calculators/emi" },
+  { label: "About", href: "/about" },
 ];
 
-export function Header() {
+interface HeaderProps {
+  reraBrokerRegNo: string | null;
+}
+
+export function Header({ reraBrokerRegNo }: HeaderProps) {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { unit, toggleUnit } = useUnit();
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
@@ -42,7 +45,7 @@ export function Header() {
       )}
     >
       <div className="container flex h-20 items-center justify-between">
-        <Link href="/" className="font-display text-2xl font-bold tracking-tight text-charcoal">
+        <Link href="/" className="font-display text-2xl font-bold tracking-tight text-slate-deep">
           Treeton <span className="text-gradient-gold">Realty</span>
         </Link>
 
@@ -51,7 +54,7 @@ export function Header() {
             <Link
               key={link.label}
               href={link.href}
-              className="text-sm font-medium text-charcoal/80 transition-colors hover:text-champagne-dark"
+              className="text-sm font-medium text-slate-deep/80 transition-colors hover:text-gold-600"
             >
               {link.label}
             </Link>
@@ -59,19 +62,14 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <button
-            onClick={toggleUnit}
-            className="flex items-center gap-1.5 rounded-full border border-champagne/40 px-3 py-1.5 text-xs font-medium text-charcoal/70 transition-colors hover:bg-champagne/10"
-            aria-label="Toggle area unit"
-          >
-            <Ruler className="h-3.5 w-3.5" />
-            {unit === "sqft" ? "Sq. Ft" : "Sq. Yd"}
-          </button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/list-property">List Property</Link>
-          </Button>
-          <Button variant="gold" size="sm" asChild>
-            <Link href="/consultation">Schedule Consultation</Link>
+          {reraBrokerRegNo && (
+            <span className="hidden whitespace-nowrap text-xs text-slate-deep/50 xl:inline">
+              RERA: {reraBrokerRegNo}
+            </span>
+          )}
+          <AreaUnitSwitcher />
+          <Button variant="primary" size="sm" asChild>
+            <Link href="/contact">Contact Us</Link>
           </Button>
         </div>
 
@@ -93,26 +91,18 @@ export function Header() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="font-display text-xl font-medium text-charcoal"
+                  className="font-display text-xl font-medium text-slate-deep"
                 >
                   {link.label}
                 </Link>
               ))}
-              <button
-                onClick={toggleUnit}
-                className="flex w-fit items-center gap-1.5 rounded-full border border-champagne/40 px-3 py-1.5 text-xs font-medium text-charcoal/70"
-              >
-                <Ruler className="h-3.5 w-3.5" />
-                {unit === "sqft" ? "Sq. Ft" : "Sq. Yd"}
-              </button>
-              <Button variant="outline" asChild>
-                <Link href="/list-property" onClick={() => setMobileOpen(false)}>
-                  List Property
-                </Link>
-              </Button>
-              <Button variant="gold" asChild>
-                <Link href="/consultation" onClick={() => setMobileOpen(false)}>
-                  Schedule Consultation
+              <AreaUnitSwitcher className="w-fit" />
+              {reraBrokerRegNo && (
+                <span className="text-xs text-slate-deep/50">RERA: {reraBrokerRegNo}</span>
+              )}
+              <Button variant="primary" asChild>
+                <Link href="/contact" onClick={() => setMobileOpen(false)}>
+                  Contact Us
                 </Link>
               </Button>
             </nav>

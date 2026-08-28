@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 import { Reveal } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
@@ -15,65 +16,100 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CORRIDORS } from "@/lib/mock-data";
+import type { PropertyType } from "@/lib/queries/listings";
 
 const STEPS = ["Property Details", "Area & Configuration", "Contact Information"];
+const PROPERTY_TYPES: PropertyType[] = ["Apartment", "Villa", "Plot", "Commercial", "Office", "Shop"];
 
-export function ValuationCta() {
+interface ValuationForm {
+  propertyType: string;
+  locality: string;
+  areaSqFt: string;
+  bhk: string;
+  name: string;
+  phone: string;
+}
+
+async function submitValuationRequest(form: ValuationForm) {
+  const message = [
+    `Free valuation request:`,
+    form.propertyType && `Property Type: ${form.propertyType}`,
+    form.locality && `Locality: ${form.locality}`,
+    form.areaSqFt && `Carpet Area: ${form.areaSqFt} Sq.Ft`,
+    form.bhk && `Configuration: ${form.bhk} BHK`,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  const response = await fetch("/api/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: form.name,
+      phone: form.phone,
+      message,
+      propertyInterest: form.propertyType || null,
+    }),
+  });
+  const json = await response.json();
+  if (!response.ok) throw new Error(json.error ?? "Something went wrong. Please try again.");
+  return json;
+}
+
+export function ValuationCta({ localities }: { localities: string[] }) {
   const [step, setStep] = React.useState(0);
-  const [submitted, setSubmitted] = React.useState(false);
-  const [form, setForm] = React.useState({
-    typology: "",
-    corridor: "",
+  const [form, setForm] = React.useState<ValuationForm>({
+    propertyType: "",
+    locality: "",
     areaSqFt: "",
     bhk: "",
     name: "",
     phone: "",
   });
 
+  const mutation = useMutation({ mutationFn: () => submitValuationRequest(form) });
   const isLastStep = step === STEPS.length - 1;
 
-  function update<K extends keyof typeof form>(key: K, value: string) {
+  function update<K extends keyof ValuationForm>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
   function handleNext() {
     if (isLastStep) {
-      setSubmitted(true);
+      mutation.mutate();
       return;
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
   return (
-    <section className="bg-ivory-dark py-24">
+    <section className="bg-alabaster-dark py-24">
       <div className="container grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
-          <p className="font-serif text-lg italic text-champagne-dark">Sell With Us</p>
-          <h2 className="mt-2 text-4xl font-bold text-charcoal md:text-5xl">
-            Get a Free Instant Property Valuation
+          <p className="font-serif text-lg italic text-gold-600">Sell With Us</p>
+          <h2 className="mt-2 text-4xl font-bold text-slate-deep md:text-5xl">
+            Get a Free Property Valuation
           </h2>
           <p className="mt-4 max-w-md text-muted-foreground">
-            Our corridor specialists benchmark your property against live GUJRERA-registered
-            inventory to give you a defensible asking price in minutes.
+            Our team benchmarks your property against live, RERA-registered inventory to give you
+            a defensible asking price.
           </p>
         </Reveal>
 
         <Reveal delay={0.1}>
           <div className="rounded-2xl border border-border bg-white p-8 shadow-elevate-lg">
-            {submitted ? (
+            {mutation.isSuccess ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center py-10 text-center"
               >
-                <CheckCircle2 className="h-12 w-12 text-champagne" />
-                <p className="mt-4 font-display text-xl font-semibold text-charcoal">
+                <CheckCircle2 className="h-12 w-12 text-emerald-600" />
+                <p className="mt-4 font-display text-xl font-semibold text-slate-deep">
                   Request Received
                 </p>
                 <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-                  A Treeton Realty valuation specialist will call {form.name || "you"} within 24
-                  hours.
+                  A Treeton Realty specialist will call {form.name || "you"} within 24 hours.
                 </p>
               </motion.div>
             ) : (
@@ -84,7 +120,7 @@ export function ValuationCta() {
                       <div
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                           i <= step
-                            ? "bg-champagne-gradient text-charcoal"
+                            ? "bg-gold-gradient text-slate-deep"
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
@@ -93,7 +129,7 @@ export function ValuationCta() {
                       {i < STEPS.length - 1 && (
                         <div
                           className={`h-px flex-1 transition-colors ${
-                            i < step ? "bg-champagne" : "bg-border"
+                            i < step ? "bg-gold-600" : "bg-border"
                           }`}
                         />
                       )}
@@ -110,7 +146,7 @@ export function ValuationCta() {
                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     className="space-y-4"
                   >
-                    <p className="font-display text-sm font-semibold uppercase tracking-wider text-champagne-dark">
+                    <p className="font-display text-sm font-semibold uppercase tracking-wider text-gold-600">
                       {STEPS[step]}
                     </p>
 
@@ -119,31 +155,31 @@ export function ValuationCta() {
                         <div>
                           <Label>Property Type</Label>
                           <Select
-                            value={form.typology}
-                            onValueChange={(v) => update("typology", v)}
+                            value={form.propertyType}
+                            onValueChange={(v) => update("propertyType", v)}
                           >
                             <SelectTrigger className="mt-1.5">
                               <SelectValue placeholder="Select property type" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Sky Villa">Sky Villa</SelectItem>
-                              <SelectItem value="Penthouse">Penthouse</SelectItem>
-                              <SelectItem value="Duplex">Duplex</SelectItem>
-                              <SelectItem value="Commercial Office">Commercial Office</SelectItem>
-                              <SelectItem value="Plot / Land Parcel">Plot / Land Parcel</SelectItem>
+                              {PROPERTY_TYPES.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <Label>Corridor</Label>
-                          <Select value={form.corridor} onValueChange={(v) => update("corridor", v)}>
+                          <Label>Locality</Label>
+                          <Select value={form.locality} onValueChange={(v) => update("locality", v)}>
                             <SelectTrigger className="mt-1.5">
-                              <SelectValue placeholder="Select corridor" />
+                              <SelectValue placeholder="Select locality" />
                             </SelectTrigger>
                             <SelectContent>
-                              {CORRIDORS.map((c) => (
-                                <SelectItem key={c.slug} value={c.slug}>
-                                  {c.name}
+                              {localities.map((l) => (
+                                <SelectItem key={l} value={l}>
+                                  {l}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -210,6 +246,13 @@ export function ValuationCta() {
                   </motion.div>
                 </AnimatePresence>
 
+                {mutation.isError && (
+                  <p className="mt-4 flex items-start gap-1.5 text-sm text-red-600">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    {mutation.error.message}
+                  </p>
+                )}
+
                 <div className="mt-8 flex items-center justify-between">
                   <Button
                     variant="ghost"
@@ -218,8 +261,8 @@ export function ValuationCta() {
                   >
                     Back
                   </Button>
-                  <Button variant="gold" onClick={handleNext}>
-                    {isLastStep ? "Get My Valuation" : "Continue"}
+                  <Button variant="primary" onClick={handleNext} disabled={mutation.isPending}>
+                    {mutation.isPending ? "Submitting…" : isLastStep ? "Get My Valuation" : "Continue"}
                   </Button>
                 </div>
               </>

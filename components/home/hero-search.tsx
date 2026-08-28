@@ -12,74 +12,52 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CORRIDORS, formatIndianPrice } from "@/lib/mock-data";
+import { formatINR } from "@/lib/currency";
+import { serializeSearchFilters, type ListingSearchFilters, DEFAULT_SEARCH_FILTERS } from "@/lib/property-filters";
+import type { PropertyType } from "@/lib/queries/listings";
 import { cn } from "@/lib/utils";
 
-const SEARCH_TABS = [
-  { value: "buy", label: "Buy" },
-  { value: "rent", label: "Rent" },
-  { value: "off-plan", label: "Off-Plan" },
-  { value: "plots", label: "Plots" },
-];
+const PROPERTY_TYPES: PropertyType[] = ["Apartment", "Villa", "Plot", "Commercial", "Office", "Shop"];
+const BHK_OPTIONS = [2, 3, 4, 5];
+const MIN_BUDGET = 1_000_000; // 10 Lakh
+const MAX_BUDGET = 150_000_000; // 15 Cr
 
-const PROPERTY_TYPES = [
-  "3BHK Sky Villa",
-  "4BHK Sky Villa",
-  "5BHK Sky Villa",
-  "Luxury Penthouse",
-  "Duplex",
-  "Commercial Office",
-  "Plot / Land Parcel",
-];
-
-const BHK_OPTIONS = ["2", "3", "4", "5+"];
-
-export function HeroSearch() {
+export function HeroSearch({ localities }: { localities: string[] }) {
   const router = useRouter();
-  const [intent, setIntent] = React.useState("buy");
-  const [corridor, setCorridor] = React.useState<string>("all");
+  const [locality, setLocality] = React.useState<string>("all");
   const [propertyType, setPropertyType] = React.useState<string>("all");
-  const [budget, setBudget] = React.useState<[number, number]>([0.75, 15]);
-  const [bhk, setBhk] = React.useState<string | null>(null);
+  const [budget, setBudget] = React.useState<[number, number]>([MIN_BUDGET, MAX_BUDGET]);
+  const [bhk, setBhk] = React.useState<number | null>(null);
 
   function handleSearch() {
-    const params = new URLSearchParams();
-    params.set("intent", intent);
-    if (corridor !== "all") params.set("corridor", corridor);
-    if (propertyType !== "all") params.set("type", propertyType);
-    if (bhk) params.set("bhk", bhk);
-    params.set("minPrice", String(budget[0]));
-    params.set("maxPrice", String(budget[1]));
-    router.push(`/properties?${params.toString()}`);
+    const filters: ListingSearchFilters = {
+      ...DEFAULT_SEARCH_FILTERS,
+      localities: locality === "all" ? [] : [locality],
+      propertyTypes: propertyType === "all" ? [] : [propertyType as PropertyType],
+      bhk: bhk ? (bhk === 5 ? [5, 6, 7, 8, 9, 10] : [bhk]) : [],
+      minPrice: budget[0] === MIN_BUDGET ? null : budget[0],
+      maxPrice: budget[1] === MAX_BUDGET ? null : budget[1],
+    };
+    const qs = serializeSearchFilters(filters);
+    router.push(qs ? `/properties?${qs}` : "/properties");
   }
 
   return (
     <div className="w-full max-w-4xl rounded-2xl bg-white/90 p-6 shadow-elevate-lg backdrop-blur-xl sm:p-8">
-      <Tabs value={intent} onValueChange={setIntent}>
-        <TabsList>
-          {SEARCH_TABS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      <div className="mt-6 grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Micro-market Corridor
+            Locality
           </label>
-          <Select value={corridor} onValueChange={setCorridor}>
+          <Select value={locality} onValueChange={setLocality}>
             <SelectTrigger>
-              <SelectValue placeholder="All Corridors" />
+              <SelectValue placeholder="All Localities" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Corridors</SelectItem>
-              {CORRIDORS.map((c) => (
-                <SelectItem key={c.slug} value={c.slug}>
-                  {c.name}
+              <SelectItem value="all">All Localities</SelectItem>
+              {localities.map((l) => (
+                <SelectItem key={l} value={l}>
+                  {l}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -111,15 +89,14 @@ export function HeroSearch() {
           <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Budget
           </label>
-          <span className="font-display text-sm font-semibold text-charcoal">
-            {formatIndianPrice(budget[0])} &ndash;{" "}
-            {budget[1] >= 15 ? "₹15+ Cr" : formatIndianPrice(budget[1])}
+          <span className="font-display text-sm font-semibold text-slate-deep">
+            {formatINR(budget[0])} &ndash; {formatINR(budget[1])}
           </span>
         </div>
         <Slider
-          min={0.75}
-          max={15}
-          step={0.25}
+          min={MIN_BUDGET}
+          max={MAX_BUDGET}
+          step={500_000}
           value={budget}
           onValueChange={(v) => setBudget([v[0], v[1]])}
         />
@@ -137,18 +114,19 @@ export function HeroSearch() {
               className={cn(
                 "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
                 bhk === option
-                  ? "border-transparent bg-champagne-gradient text-charcoal shadow-gold"
-                  : "border-border text-charcoal/70 hover:border-champagne/50"
+                  ? "border-transparent bg-gold-gradient text-slate-deep shadow-gold"
+                  : "border-border text-slate-deep/70 hover:border-gold-600/50"
               )}
             >
-              {option} BHK
+              {option}
+              {option === 5 ? "+" : ""} BHK
             </button>
           ))}
         </div>
       </div>
 
-      <Button onClick={handleSearch} variant="gold" size="lg" className="mt-7 w-full sm:w-auto">
-        Search Luxury Homes
+      <Button onClick={handleSearch} variant="primary" size="lg" className="mt-7 w-full sm:w-auto">
+        Search Properties
       </Button>
     </div>
   );

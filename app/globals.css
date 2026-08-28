@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    /* Ivory Warm White surface, Deep Charcoal text, Champagne Gold accent */
-    --background: 45 33% 97%;
-    --foreground: 222 22% 13%;
+    /* Alabaster surface, Slate Deep text, Emerald primary / Gold secondary accent */
+    --background: 210 40% 98%;
+    --foreground: 222.2 47.4% 11.2%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 22% 13%;
+    --card-foreground: 222.2 47.4% 11.2%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 22% 13%;
+    --popover-foreground: 222.2 47.4% 11.2%;
 
-    --primary: 222 22% 13%;
-    --primary-foreground: 45 33% 97%;
+    --primary: 161.4 93.5% 30.4%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 43 39% 93%;
-    --secondary-foreground: 222 22% 13%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 43 25% 92%;
-    --muted-foreground: 222 12% 40%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 46 56% 52%;
-    --accent-foreground: 222 22% 13%;
+    --accent: 32.1 94.6% 43.7%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 45 33% 97%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 43 20% 88%;
-    --input: 43 20% 88%;
-    --ring: 46 56% 52%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 160.1 84.1% 39.4%;
 
     --radius: 0.5rem;
   }
@@ -93,19 +93,19 @@
     @apply bg-white/60 backdrop-blur-xl backdrop-saturate-150 border border-white/40;
   }
   .glass-dark {
-    @apply bg-charcoal/60 backdrop-blur-xl backdrop-saturate-150 border border-white/10;
+    @apply bg-slate-deep/60 backdrop-blur-xl backdrop-saturate-150 border border-white/10;
   }
 
   .text-gradient-gold {
-    @apply bg-champagne-gradient bg-clip-text text-transparent;
+    @apply bg-gold-gradient bg-clip-text text-transparent;
   }
 
   .shimmer-gold {
     background: linear-gradient(
       110deg,
-      rgba(212, 175, 55, 0.15) 25%,
-      rgba(212, 175, 55, 0.4) 50%,
-      rgba(212, 175, 55, 0.15) 75%
+      rgba(245, 158, 11, 0.15) 25%,
+      rgba(245, 158, 11, 0.4) 50%,
+      rgba(245, 158, 11, 0.15) 75%
     );
     background-size: 200% 100%;
     @apply animate-shimmer;

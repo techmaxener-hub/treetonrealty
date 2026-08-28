@@ -1,75 +1,103 @@
-import type { Developer, PossessionYear, Property, PropertyTypology } from "@/lib/mock-data";
+import type {
+  FacingDirection,
+  FurnishingStatus,
+  ListingFilters,
+  PossessionStatus,
+  PropertyType,
+} from "@/lib/queries/listings";
 
-export type PossessionFilter = "all" | "ready" | "2026" | "2027" | "2028";
-
-export interface PropertyFilters {
-  corridor: string | "all";
-  typology: PropertyTypology | "all";
-  developer: Developer | "all";
-  possession: PossessionFilter;
-  bhk: string | null;
-  priceRange: [number, number];
-  amenities: string[];
-  gujreraVerifiedOnly: boolean;
+export interface ListingSearchFilters {
+  localities: string[];
+  propertyTypes: PropertyType[];
+  bhk: number[];
+  minPrice: number | null;
+  maxPrice: number | null;
+  furnishing: FurnishingStatus[];
+  possessionStatus: PossessionStatus[];
+  facingDirection: FacingDirection[];
+  reraVerifiedOnly: boolean;
 }
 
-export const DEFAULT_PRICE_RANGE: [number, number] = [0.75, 15];
-
-export const DEFAULT_FILTERS: PropertyFilters = {
-  corridor: "all",
-  typology: "all",
-  developer: "all",
-  possession: "all",
-  bhk: null,
-  priceRange: DEFAULT_PRICE_RANGE,
-  amenities: [],
-  gujreraVerifiedOnly: false,
+export const DEFAULT_SEARCH_FILTERS: ListingSearchFilters = {
+  localities: [],
+  propertyTypes: [],
+  bhk: [],
+  minPrice: null,
+  maxPrice: null,
+  furnishing: [],
+  possessionStatus: [],
+  facingDirection: [],
+  reraVerifiedOnly: false,
 };
 
-function matchesPossession(possessionYear: PossessionYear, filter: PossessionFilter) {
-  if (filter === "all") return true;
-  if (filter === "ready") return possessionYear === "Ready";
-  return possessionYear === Number(filter);
+const PROPERTY_TYPES: PropertyType[] = ["Apartment", "Villa", "Plot", "Commercial", "Office", "Shop"];
+const FURNISHING_STATUSES: FurnishingStatus[] = ["Unfurnished", "Semi-Furnished", "Fully-Furnished"];
+const POSSESSION_STATUSES: PossessionStatus[] = ["Ready", "Under Construction"];
+const FACING_DIRECTIONS: FacingDirection[] = ["N", "S", "E", "W", "NE", "NW", "SE", "SW"];
+
+function parseList<T extends string>(value: string | null, allowed: readonly T[]): T[] {
+  if (!value) return [];
+  return value.split(",").filter((v): v is T => (allowed as readonly string[]).includes(v));
 }
 
-function matchesBhk(property: Property, bhk: string | null) {
-  if (!bhk) return true;
-  if (bhk === "5+") return property.bedrooms >= 5;
-  return property.bedrooms === Number(bhk);
+/** Parses filters from a URL's search params -- the single source of truth for /properties. */
+export function parseSearchFilters(searchParams: URLSearchParams): ListingSearchFilters {
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  const bhk = searchParams.get("bhk");
+
+  return {
+    localities: searchParams.get("locality")?.split(",").filter(Boolean) ?? [],
+    propertyTypes: parseList(searchParams.get("type"), PROPERTY_TYPES),
+    bhk: bhk ? bhk.split(",").map(Number).filter((n) => Number.isFinite(n)) : [],
+    minPrice: minPrice ? Number(minPrice) : null,
+    maxPrice: maxPrice ? Number(maxPrice) : null,
+    furnishing: parseList(searchParams.get("furnishing"), FURNISHING_STATUSES),
+    possessionStatus: parseList(searchParams.get("possession"), POSSESSION_STATUSES),
+    facingDirection: parseList(searchParams.get("facing"), FACING_DIRECTIONS),
+    reraVerifiedOnly: searchParams.get("reraOnly") === "1",
+  };
 }
 
-export function filterProperties(properties: Property[], filters: PropertyFilters) {
-  return properties.filter((property) => {
-    if (filters.corridor !== "all" && property.corridorSlug !== filters.corridor) return false;
-    if (filters.typology !== "all" && property.typology !== filters.typology) return false;
-    if (filters.developer !== "all" && property.developer !== filters.developer) return false;
-    if (!matchesPossession(property.possessionYear, filters.possession)) return false;
-    if (!matchesBhk(property, filters.bhk)) return false;
-    if (property.priceInCr < filters.priceRange[0] || property.priceInCr > filters.priceRange[1]) {
-      return false;
-    }
-    if (filters.gujreraVerifiedOnly && !property.gujreraVerified) return false;
-    if (
-      filters.amenities.length > 0 &&
-      !filters.amenities.every((a) => property.amenities.includes(a))
-    ) {
-      return false;
-    }
-    return true;
-  });
+/** Serializes filters back to a query string for router.push, omitting empty/default values. */
+export function serializeSearchFilters(filters: ListingSearchFilters): string {
+  const params = new URLSearchParams();
+  if (filters.localities.length) params.set("locality", filters.localities.join(","));
+  if (filters.propertyTypes.length) params.set("type", filters.propertyTypes.join(","));
+  if (filters.bhk.length) params.set("bhk", filters.bhk.join(","));
+  if (filters.minPrice !== null) params.set("minPrice", String(filters.minPrice));
+  if (filters.maxPrice !== null) params.set("maxPrice", String(filters.maxPrice));
+  if (filters.furnishing.length) params.set("furnishing", filters.furnishing.join(","));
+  if (filters.possessionStatus.length) params.set("possession", filters.possessionStatus.join(","));
+  if (filters.facingDirection.length) params.set("facing", filters.facingDirection.join(","));
+  if (filters.reraVerifiedOnly) params.set("reraOnly", "1");
+  return params.toString();
 }
 
-export function countActiveFilters(filters: PropertyFilters) {
-  let count = 0;
-  if (filters.developer !== "all") count++;
-  if (filters.possession !== "all") count++;
-  if (filters.gujreraVerifiedOnly) count++;
-  if (filters.amenities.length > 0) count += filters.amenities.length;
-  if (
-    filters.priceRange[0] !== DEFAULT_PRICE_RANGE[0] ||
-    filters.priceRange[1] !== DEFAULT_PRICE_RANGE[1]
-  ) {
-    count++;
-  }
-  return count;
+export function toListingFilters(filters: ListingSearchFilters): ListingFilters {
+  return {
+    localities: filters.localities.length ? filters.localities : undefined,
+    propertyTypes: filters.propertyTypes.length ? filters.propertyTypes : undefined,
+    bhk: filters.bhk.length ? filters.bhk : undefined,
+    minPrice: filters.minPrice ?? undefined,
+    maxPrice: filters.maxPrice ?? undefined,
+    furnishing: filters.furnishing.length ? filters.furnishing : undefined,
+    possessionStatus: filters.possessionStatus.length ? filters.possessionStatus : undefined,
+    facingDirection: filters.facingDirection.length ? filters.facingDirection : undefined,
+    reraVerifiedOnly: filters.reraVerifiedOnly || undefined,
+  };
+}
+
+export function countActiveFilters(filters: ListingSearchFilters): number {
+  return (
+    filters.localities.length +
+    filters.propertyTypes.length +
+    filters.bhk.length +
+    filters.furnishing.length +
+    filters.possessionStatus.length +
+    filters.facingDirection.length +
+    (filters.minPrice !== null ? 1 : 0) +
+    (filters.maxPrice !== null ? 1 : 0) +
+    (filters.reraVerifiedOnly ? 1 : 0)
+  );
 }
