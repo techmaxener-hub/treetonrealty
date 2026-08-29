@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, KanbanSquare, Building2, LogOut } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Building2, Users, LogOut } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server-auth-client";
 import { Button } from "@/components/ui/button";
 import { signOut } from "../login/actions";
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: null },
   { href: "/admin/leads", label: "Leads", icon: KanbanSquare, roles: null },
   { href: "/admin/listings", label: "Listings", icon: Building2, roles: null },
+  { href: "/admin/team", label: "Team", icon: Users, roles: null },
 ] as const;
 
 export default async function AdminDashboardLayout({
