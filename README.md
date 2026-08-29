@@ -44,16 +44,28 @@ fabricating them:
 - **RERA broker registration number** (`site_settings.rera_broker_reg_no`) — shown
   in the header and footer once set; displays a placeholder prompt until then.
 - **Stamp duty rates** (`stamp_duty_rates` table) — every seeded row is marked
-  `is_verified = false` with a `source_notes` explanation of exactly what needs
-  confirming against the current state government notification (Gujarat,
-  Maharashtra, Karnataka, Delhi, UP are seeded; Karnataka in particular is
-  simplified from its real value-tiered slab structure and needs real slabs before
-  launch).
+  `is_verified = false`. A 2026-08-29 research pass (see migration
+  `20260829090000_stamp_duty_rate_research_pass.sql`) cross-checked each state's
+  figures against multiple named secondary sources and corrected several real
+  gaps (Maharashtra and UP were missing their women's-discount modeling
+  entirely; Karnataka's registration fee had genuinely changed 1%→2% as of
+  31 Aug 2025) — but this is still **not** a primary government-notification
+  confirmation, and known simplifications remain: Karnataka's real value-tiered
+  slabs, Maharashtra's area-tiered rates, and Gujarat's women's concession
+  (a registration-fee waiver, which this schema can't represent as a
+  stamp-duty-percent discount) are all called out in each row's `source_notes`.
+  A local legal advisor must confirm against the live state notification before
+  launch.
 - **Area conversion factors** — Guntha/Acre/Cent/Sq.Meter are fixed, universal
-  conversions. **Bigha and Marla vary by state/region** and must be confirmed for
-  the regions you actually transact in — the code uses the commonly-cited Gujarat
-  Bigha (~17,427 sq.ft) and Punjab/North India Marla (272.25 sq.ft) figures as a
-  starting point, not a verified legal source.
+  conversions. **Bigha and Marla vary by state/region.** The Marla figure
+  (272.25 sq.ft, Punjab/Haryana/HP revenue standard) was confirmed against an
+  Indian-specific reference distinct from Pakistan's differing Marla variants.
+  The Bigha figure was corrected to 17,424 sq.ft, scoped specifically to
+  North/Central Gujarat (Ahmedabad & Gandhinagar districts, this business's
+  actual markets) — Gujarat has no single statewide Bigha, and South Gujarat
+  uses a materially different ~23,958 sq.ft figure. Both are still
+  research-grade (secondary sources), not a primary revenue-department
+  confirmation — see `lib/area.ts` for citations.
 - **Team bios** (`team_members` table) — seeded empty. No fictional names, roles,
   or photos were invented; the About page shows a "profiles coming soon" state
   until real team members are added.

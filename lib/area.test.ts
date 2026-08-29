@@ -30,13 +30,13 @@ describe("convertArea", () => {
     expect(convertArea(10.7639, "sqm")).toBeCloseTo(1, 10);
   });
 
-  it("converts sqft to Gujarat bigha by default (~17,427 Sq.Ft)", () => {
-    expect(convertArea(17_427, "bigha")).toBe(1);
+  it("converts sqft to Gujarat bigha by default (North/Central Gujarat, 17,424 Sq.Ft)", () => {
+    expect(convertArea(17_424, "bigha")).toBe(1);
   });
 
   it("throws for a state with no registered Bigha factor", () => {
     // @ts-expect-error deliberately passing an unregistered region
-    expect(() => convertArea(17_427, "bigha", { bighaRegion: "maharashtra" })).toThrow();
+    expect(() => convertArea(17_424, "bigha", { bighaRegion: "maharashtra" })).toThrow();
   });
 
   it("throws on negative sqft", () => {
