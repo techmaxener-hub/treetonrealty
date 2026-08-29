@@ -71,8 +71,15 @@ fabricating them:
   until real team members are added.
 - **GST treatment** in the PDP cost-breakdown sheet (`lib/gst.ts`) is a simplified
   flat-rate model (5% under-construction residential, 12% commercial, 0% ready
-  resale) — real GST/ITC/abatement rules are more nuanced and this needs a tax
-  advisor's sign-off before being presented as final to a buyer.
+  resale). A 2026-08-29 research pass confirmed these specific rates are current
+  and were unaffected by the September 2025 "GST 2.0" reform (which touched
+  construction materials/works contracts, not buyer-facing property rates) — but
+  the model still doesn't implement the 1% affordable-housing carve-out (carpet
+  area ≤ 90 sqm here, since Ahmedabad/Gandhinagar aren't GST-defined metros, and
+  price ≤ ₹45L), which structurally can't occur in this business's current
+  inventory but would matter if a lower-priced listing is ever added. Real
+  GST/ITC/abatement rules are more nuanced still, and this needs a tax advisor's
+  sign-off before being presented as final to a buyer.
 
 ## Local development
 

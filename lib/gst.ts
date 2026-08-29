@@ -2,20 +2,34 @@
 // resale residential (no input tax credit chain on a completed, OC-received unit);
 // it DOES apply to under-construction residential and to commercial property.
 //
-// VERIFICATION NEEDED BEFORE LAUNCH: GST rates on real estate carry conditions (e.g.
-// affordable-housing slabs, ITC eligibility, land-value abatement) that this
-// simplified flat-rate model does not capture. Confirm the applicable rate and
-// abatement treatment with a tax advisor before presenting this as final to a buyer.
+// RESEARCHED 2026-08-29 against multiple secondary sources (busy.in, homefirstindia.com,
+// brigadegroup.com, razorpay.com, vakilsearch.com): the 5% / 12% / 0% rates below have
+// been stable since April 2019 and were NOT changed by the September 2025 "GST 2.0" rate
+// rationalization -- that reform cut GST on construction INPUTS (e.g. cement 28%->18%)
+// and works contracts, not the buyer-facing property sale rate modeled here.
+//
+// KNOWN SIMPLIFICATION, STILL UNMODELED: a 1% "affordable housing" GST rate applies
+// instead of 5% when BOTH conditions hold -- carpet area <= 90 sqm (or <= 60 sqm in the
+// GST-defined metros: Bengaluru, Chennai, Delhi NCR, Hyderabad, Kolkata, Mumbai/MMR --
+// Ahmedabad/Gandhinagar are NOT on this list, so the 90 sqm threshold would apply here)
+// AND price <= Rs 45 lakh. Not implemented because it structurally cannot occur in this
+// business's current inventory (all listings priced well above Rs 45L), but it is a real
+// gap if a lower-priced under-construction listing is ever added -- see PropertyType/
+// PossessionStatus params below, which would need a carpet-area + price check added.
+//
+// VERIFICATION NEEDED BEFORE LAUNCH: still needs a tax advisor's sign-off on ITC
+// eligibility and land-value abatement treatment before being presented as final to a
+// buyer -- research-grade sourcing is not a substitute for professional review.
 
 import type { Database } from "@/lib/supabase/database.types";
 
 type PropertyType = Database["public"]["Enums"]["property_type_enum"];
 type PossessionStatus = Database["public"]["Enums"]["possession_status_enum"];
 
-/** UNVERIFIED placeholder rate. Confirm current GST rate/abatement before launch. */
-export const GST_RATE_UNDER_CONSTRUCTION_RESIDENTIAL = 0.05; // 5%, without ITC (commonly cited post-2019 rate)
-/** UNVERIFIED placeholder rate. Confirm current GST rate before launch. */
-export const GST_RATE_COMMERCIAL = 0.12; // 12%
+/** Confirmed current rate (stable since April 2019, unaffected by Sept 2025 GST 2.0). Excludes the unmodeled 1% affordable-housing carve-out -- see file header. */
+export const GST_RATE_UNDER_CONSTRUCTION_RESIDENTIAL = 0.05; // 5%, without ITC
+/** Confirmed current rate (stable since April 2019, unaffected by Sept 2025 GST 2.0). */
+export const GST_RATE_COMMERCIAL = 0.12; // 12%, with ITC
 
 export interface GstApplicability {
   applies: boolean;
