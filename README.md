@@ -41,8 +41,8 @@ The following are intentionally **not** filled in with real values, and the UI
 shows honest "add this in admin settings" / "coming soon" states instead of
 fabricating them:
 
-- **RERA broker registration number** (`site_settings.rera_broker_reg_no`) — shown
-  in the header and footer once set; displays a placeholder prompt until then.
+- ~~**RERA broker registration number**~~ — set (`A031202602650`), live in the
+  header/footer/About page.
 - **Stamp duty rates** (`stamp_duty_rates` table) — every seeded row is marked
   `is_verified = false`. A 2026-08-29 research pass (see migration
   `20260829090000_stamp_duty_rate_research_pass.sql`) cross-checked each state's
@@ -66,9 +66,23 @@ fabricating them:
   uses a materially different ~23,958 sq.ft figure. Both are still
   research-grade (secondary sources), not a primary revenue-department
   confirmation — see `lib/area.ts` for citations.
-- **Team bios** (`team_members` table) — seeded empty. No fictional names, roles,
-  or photos were invented; the About page shows a "profiles coming soon" state
-  until real team members are added.
+- **Team bios** (`team_members` table) — seeded empty, and no fictional names,
+  roles, or photos were invented. A full `/admin/team` management page exists
+  (list, create, edit, publish/unpublish, delete, photo upload) so the client
+  can add real staff themselves; the About page keeps its "profiles coming
+  soon" state until someone does.
+- **Logo** — no logo file exists yet beyond the current text wordmark
+  ("Treeton Realty" in header/footer). Needs a real logo asset from the
+  client before launch; wire-in point is `components/layout/header.tsx` and
+  `components/layout/footer.tsx`.
+- **WhatsApp Business number** (`site_settings.whatsapp_number`) — not yet
+  set. Every WhatsApp CTA on the PDP (`components/property/broker-contact.tsx`)
+  is disabled/hidden until this is filled in.
+- **No admin UI exists yet for `site_settings`** (WhatsApp number, RERA
+  number, company address, social links, trust-counter stats) — every value
+  set so far (e.g. the RERA number) was set via direct database access,
+  since there's no `/admin/settings` page. Same gap `team_members` had
+  before `/admin/team` was built; needs the same treatment.
 - **GST treatment** in the PDP cost-breakdown sheet (`lib/gst.ts`) is a simplified
   flat-rate model (5% under-construction residential, 12% commercial, 0% ready
   resale). A 2026-08-29 research pass confirmed these specific rates are current
@@ -101,3 +115,78 @@ call, this network's Node/undici prefers IPv6 and stalls against Supabase's
 Cloudflare-fronted hosts — already worked around via
 `NODE_OPTIONS=--dns-result-order=ipv4first` in the npm scripts, but worth knowing
 if you ever run these commands directly instead of through `npm run`.
+
+## End-to-end tests (Playwright)
+
+```bash
+npx playwright install chromium   # one-time browser install
+npm run dev                       # separate terminal, real dev server
+PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
+```
+
+Six specs in `e2e/`, run against the **real** Supabase project in `.env.local`
+(never mocked) — each creates and tears down its own throwaway fixtures via
+the service-role key, tagged `E2E TEST FIXTURE` in descriptions where
+applicable:
+
+- `public-search-to-whatsapp.spec.ts` — locality filter → PDP → WhatsApp link
+- `brochure-download-lead.spec.ts` — form submit → signed URL → lead created
+- `site-visit-booking.spec.ts` — form submit → confirmation → lead + site_visit rows
+- `admin-create-publish-listing.spec.ts` — login → create → publish → public visibility
+- `admin-lead-kanban-drag.spec.ts` — drag-and-drop → status persisted
+- `rls-boundary.spec.ts` — API-only: a Broker cannot read another Broker's
+  lead; an unrelated Broker cannot read a Sub-Broker's `commission_percent`
+
+⚠️ Never point `PLAYWRIGHT_BASE_URL`/`.env.local` at a production Supabase
+project — these tests write real rows (even though they clean up after
+themselves) and log in as newly-created throwaway admin/broker accounts.
+
+## RLS re-verification status
+
+Writing the RLS boundary tests above surfaced one real gap: `profiles` only
+had a self-or-admin select policy (no "self or downline" policy like
+`leads`/`site_visits` have), which meant a Team Lead/Broker viewing a lead
+assigned to their downline would see the lead but the joined
+`assigned_profile:profiles(full_name)` came back `null` — the Kanban card
+showed "Unassigned" for a lead that WAS assigned. Fixed in
+`supabase/migrations/20260829100000_profiles_select_self_or_downline.sql`.
+
+**This migration has NOT been applied to the live Supabase project** — the
+Supabase CLI in the environment that wrote it is authenticated to a
+different account than `leeksduuapufssuhykoq`, so `supabase db push` wasn't
+possible from there. Apply it manually (Dashboard → SQL Editor, paste the
+migration's contents) or from an environment with proper CLI access before
+relying on downline visibility in the Kanban board.
+
+Every other RLS policy in `supabase/migrations/` was read through as part of
+this pass (role hierarchy, listings/leads/site_visits downline scoping,
+storage bucket policies) with no other gaps found — see each migration file
+for the reasoning behind its specific policy.
+
+## Deployment (Vercel + Supabase)
+
+Not yet deployed — this section is prep only, so the actual go-live is a
+deliberate separate step, not something to run blind from these notes.
+
+**Environment variables** (see `.env.local.example` for the full list with
+descriptions): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`. Set all three in Vercel's Project Settings →
+Environment Variables — the service role key must **never** be prefixed
+`NEXT_PUBLIC_` or it ships to the browser bundle (see the comment in
+`.env.local.example`).
+
+**Before going live**:
+1. Decide whether production uses a *new* Supabase project or promotes the
+   current one (`leeksduuapufssuhykoq`) — if new, re-run every migration in
+   `supabase/migrations/` in order (`supabase db push` from a properly
+   linked CLI session) and re-seed only what's real (not `seed.sql`'s demo
+   listings).
+2. Apply the pending `20260829100000_profiles_select_self_or_downline.sql`
+   migration (see above) if it hasn't been already.
+3. Fill in the remaining compliance placeholders this README tracks (RERA ✅
+   done, team bios, WhatsApp number, logo, GST tax-advisor sign-off,
+   stamp-duty legal-advisor confirmation).
+4. Run `npm run build` and `npm run test:e2e` against whatever Supabase
+   project production will actually use, not just local.
+5. Connect the Vercel project to this GitHub repo (`v2-luxury-frontend` is
+   the default branch), set the environment variables above, deploy.
