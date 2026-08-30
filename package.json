@@ -7,9 +7,13 @@
     "build": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next build",
     "start": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next start",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-accordion": "^1.2.20",
     "@radix-ui/react-checkbox": "^1.3.11",
     "@radix-ui/react-dialog": "^1.1.23",
@@ -21,9 +25,6 @@
     "@radix-ui/react-slot": "^1.3.3",
     "@radix-ui/react-tabs": "^1.1.21",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.110.8",
     "@tanstack/react-query": "^5.90.0",
@@ -44,11 +45,12 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
-    "cross-env": "^7.0.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
+    "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "15.5.24",
     "postcss": "^8",
