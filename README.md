@@ -78,11 +78,11 @@ fabricating them:
 - **WhatsApp Business number** (`site_settings.whatsapp_number`) — not yet
   set. Every WhatsApp CTA on the PDP (`components/property/broker-contact.tsx`)
   is disabled/hidden until this is filled in.
-- **No admin UI exists yet for `site_settings`** (WhatsApp number, RERA
-  number, company address, social links, trust-counter stats) — every value
-  set so far (e.g. the RERA number) was set via direct database access,
-  since there's no `/admin/settings` page. Same gap `team_members` had
-  before `/admin/team` was built; needs the same treatment.
+- ~~**No admin UI for `site_settings`**~~ — built: `/admin/settings`
+  (admin-only, gated both in the nav and by the existing
+  `site_settings_update_admin` RLS policy) covers WhatsApp number, RERA
+  number, company contact/address, Google Maps embed, social links, and the
+  homepage trust-counter stats.
 - **GST treatment** in the PDP cost-breakdown sheet (`lib/gst.ts`) is a simplified
   flat-rate model (5% under-construction residential, 12% commercial, 0% ready
   resale). A 2026-08-29 research pass confirmed these specific rates are current

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, KanbanSquare, Building2, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Building2, Users, Settings, LogOut } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server-auth-client";
 import { Button } from "@/components/ui/button";
 import { signOut } from "../login/actions";
@@ -10,6 +10,9 @@ const NAV_ITEMS = [
   { href: "/admin/leads", label: "Leads", icon: KanbanSquare, roles: null },
   { href: "/admin/listings", label: "Listings", icon: Building2, roles: null },
   { href: "/admin/team", label: "Team", icon: Users, roles: null },
+  // RLS (site_settings_update_admin) only allows admins to write this table --
+  // gate the nav item to match, rather than showing a page that errors on save.
+  { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ] as const;
 
 export default async function AdminDashboardLayout({
